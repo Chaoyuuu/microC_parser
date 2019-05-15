@@ -1198,7 +1198,7 @@ case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 case YY_STATE_EOF(STRING_STATE):
 #line 119 "compiler_hw2.l"
-{ ECHO; }
+{ ECHO; yyterminate();}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP

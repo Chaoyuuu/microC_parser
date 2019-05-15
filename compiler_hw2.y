@@ -45,6 +45,7 @@ void dump_symbol();
 %token <i_val> I_CONST
 %token <f_val> F_CONST
 %token <string> STRING_CONST
+%token <i_val> '('
 
 /* Nonterminal with return, which need to sepcify type */
 %type <f_val> stat
@@ -64,11 +65,12 @@ stat
     : declaration {}
     | compound_stat {}
     | expression_stat {}
-    | print_func {}
+    | print_func {} 
+    | function_declaration {}
 ;
 
 declaration
-    : type ID '=' expression
+    : type expression SEMICOLON
     | type ID SEMICOLON
 ;
 
@@ -77,28 +79,20 @@ print_func
 ;
 
 compound_stat
-    : '{' '}'
-    | '{' expression_stat '}'
-    | '{' declaration '}'
-    | '{' declaration expression_stat'}'
+    : '{' program '}'
 ;
 
 expression_stat
-    : function_declaration expression_stat
-    | selection_statement expression_stat 
-    | while_statement expression_stat 
-    | expression expression_stat
-    | declaration expression_stat 
-    | print_func expression_stat
-    | return_statement expression_stat
-    |
+    : selection_statement 
+    | while_statement 
+    | expression 
+    | return_statement 
 ;
 
 selection_statement
-    : IF '(' expression ')' compound_stat selection_statement
-    | ELSE compound_stat 
-    | IF ELSE '(' expression ')' compound_stat selection_statement
-    | 
+    : IF '(' expression ')' compound_stat 
+    | selection_statement ELSE compound_stat 
+    | selection_statement IF ELSE '(' expression ')' compound_stat 
 ;
 
 while_statement
@@ -107,12 +101,19 @@ while_statement
 
 
 expression
-    : expression_end expression_list
+    : expression expression_list expression_end 
+    | initializer expression_spec SEMICOLON
+    | initializer
+    | '(' expression ')'
 ;
 
+expression_spec
+    : INC_OP 
+    | DEC_OP 
+;
 expression_end
     : initializer
-    |
+    | SEMICOLON
 ;
 
 expression_list
@@ -120,62 +121,57 @@ expression_list
     | relation_expression
     | arithmetic_expression
     | logic_expression
-    | SEMICOLON 
-    |
 ;
 
 assign_expression
-    : ADD_ASSIGN expression
-    | SUB_ASSIGN expression
-    | MUL_ASSIGN expression
-    | DIV_ASSIGN expression
-    | MOD_ASSIGN expression
-    | '=' expression
+    : ADD_ASSIGN 
+    | SUB_ASSIGN 
+    | MUL_ASSIGN 
+    | DIV_ASSIGN 
+    | MOD_ASSIGN 
+    | '=' 
 ;
 
 relation_expression
-    : '>' expression
-    | '<' expression
-    | GE_OP expression
-    | LE_OP expression
-    | EQ_OP expression
-    | NE_OP expression
+    : '>' 
+    | '<' 
+    | GE_OP 
+    | LE_OP 
+    | EQ_OP 
+    | NE_OP 
 ;
 
 arithmetic_expression
-    : '+' expression
-    | '-' expression
-    | '*' expression
-    | '/' expression
-    | '%' expression 
-    | INC_OP expression
-    | DEC_OP expression
+    : '+' 
+    | '-' 
+    | '*' 
+    | '/' 
+    | '%'
 ;
 
 logic_expression
-    : AND_OP expression
-    | OR_OP expression
-    | '!' expression
+    : AND_OP 
+    | OR_OP 
+    | '!' 
 ;
 
 return_statement
-    : RETURN expression
+    : RETURN expression SEMICOLON
 ;
 
 
 function_declaration
-    : type ID declarator compound_stat
+    : type ID declarator compound_stat 
     | ID declarator2 SEMICOLON
 ;
 
 declarator
-    : '(' identifier_list ')' declarator
-    | '(' ')' declarator
-    |
+    : '(' identifier_list ')' 
+    | '(' ')' 
 ;
 
 identifier_list
-    : type ID ',' identifier_list
+    : identifier_list ',' type ID
     | type ID
 ;
 
@@ -191,7 +187,7 @@ identifier_list2
 ;
 
 initializer
-    : I_CONST
+    : I_CONST 
     | F_CONST
     | QUOTA STRING_CONST QUOTA
     | TRUE

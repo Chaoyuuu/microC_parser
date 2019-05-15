@@ -116,7 +116,7 @@ id			{letter}+({letter}|{digit})*
 [\n]        { ECHO; }
 [ \t]		{ ECHO; } /* Ignore */
 [^ \t\n] 	{ ECHO; } /* Ignore other charactor sets */
-<<EOF>>     { ECHO; }
+<<EOF>>     { ECHO; yyterminate();}
 
 %%
 
