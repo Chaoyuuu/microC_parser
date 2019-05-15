@@ -1,6 +1,4 @@
-/////////////
-
-
+/////////////Downloads new githubS
 
 /*	Definition section */
 %{
@@ -70,7 +68,7 @@ stat
 ;
 
 declaration
-    : type expression SEMICOLON
+    : type ID '=' expression SEMICOLON
     | type ID SEMICOLON
 ;
 
@@ -85,7 +83,7 @@ compound_stat
 expression_stat
     : selection_statement 
     | while_statement 
-    | expression 
+    | expression SEMICOLON
     | return_statement 
 ;
 
@@ -101,38 +99,52 @@ while_statement
 
 
 expression
-    : expression expression_list expression_end 
-    | initializer expression_spec SEMICOLON
-    | initializer
+    : logic_expr
+    | assign_expression
+;
+
+logic_expr
+    : comparison_expr
+    | logic_expr logic_op comparison_expr
+;
+
+comparison_expr
+    : add_expr
+    | comparison_expr relation_op add_expr
+;
+
+add_expr
+    : mul_expr
+    | add_expr addition_op mul_expr
+;
+
+mul_expr
+    : postfix_expr
+    | mul_expr mul_op postfix_expr
+;
+
+postfix_expr
+    : parenthesis_expr
+    | parenthesis_expr postfix_op
+;
+
+parenthesis_expr
+    : initializer
     | '(' expression ')'
 ;
 
-expression_spec
+postfix_op
     : INC_OP 
     | DEC_OP 
 ;
-expression_end
-    : initializer
-    | SEMICOLON
+
+mul_op
+    : '*' 
+    | '/' 
+    | '%'
 ;
 
-expression_list
-    : assign_expression
-    | relation_expression
-    | arithmetic_expression
-    | logic_expression
-;
-
-assign_expression
-    : ADD_ASSIGN 
-    | SUB_ASSIGN 
-    | MUL_ASSIGN 
-    | DIV_ASSIGN 
-    | MOD_ASSIGN 
-    | '=' 
-;
-
-relation_expression
+relation_op
     : '>' 
     | '<' 
     | GE_OP 
@@ -141,20 +153,29 @@ relation_expression
     | NE_OP 
 ;
 
-arithmetic_expression
+addition_op
     : '+' 
     | '-' 
-    | '*' 
-    | '/' 
-    | '%'
 ;
 
-logic_expression
+logic_op
     : AND_OP 
     | OR_OP 
     | '!' 
 ;
 
+assign_expression
+    : expression assign_op expression 
+;
+
+assign_op
+    : ADD_ASSIGN 
+    | SUB_ASSIGN 
+    | MUL_ASSIGN 
+    | DIV_ASSIGN 
+    | MOD_ASSIGN 
+    | '=' 
+;
 return_statement
     : RETURN expression SEMICOLON
 ;
