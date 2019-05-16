@@ -9,7 +9,7 @@ char buf[BUF_SIZE];
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, BUF_SIZE - strlen(buf) - 1); }
 
-int count = 1;
+int line_num = 1;
 
 %}
 
@@ -28,95 +28,95 @@ id			{letter}+({letter}|{digit})*
 %%
 
  /* Arithmetic */
-"+"     { ECHO; return('+'); }
-"-" 	{ ECHO; return('-'); }
-"*" 	{ ECHO; return('*'); }
-"/" 	{ ECHO; return('/'); }
-"%"     { ECHO; return('%'); }
-"++"    { ECHO; return(INC_OP); }
-"--"    { ECHO; return(DEC_OP); }
+"+"     { ECHO; CONCAT; return('+'); }
+"-" 	{ ECHO; CONCAT; return('-'); }
+"*" 	{ ECHO; CONCAT; return('*'); }
+"/" 	{ ECHO; CONCAT; return('/'); }
+"%"     { ECHO; CONCAT; return('%'); }
+"++"    { ECHO; CONCAT; return(INC_OP); }
+"--"    { ECHO; CONCAT; return(DEC_OP); }
 
  /* Relational */
-">"		{ ECHO; return('>'); }
-"<"		{ ECHO; return('<'); }
-">="	{ ECHO; return(GE_OP); }
-"<="	{ ECHO; return(LE_OP); }
-"=="	{ ECHO; return(EQ_OP); }
-"!="	{ ECHO; return(NE_OP); }
+">"		{ ECHO; CONCAT; return('>'); }
+"<"		{ ECHO; CONCAT; return('<'); }
+">="	{ ECHO; CONCAT; return(GE_OP); }
+"<="	{ ECHO; CONCAT; return(LE_OP); }
+"=="	{ ECHO; CONCAT; return(EQ_OP); }
+"!="	{ ECHO; CONCAT; return(NE_OP); }
 
  /* Assignment */
-"="		{ ECHO; return('='); }
-"+="	{ ECHO; return(ADD_ASSIGN); }
-"-="	{ ECHO; return(SUB_ASSIGN); }
-"*="	{ ECHO; return(MUL_ASSIGN); }
-"/="	{ ECHO; return(DIV_ASSIGN); }
-"%="	{ ECHO; return(MOD_ASSIGN); }
+"="		{ ECHO; CONCAT; return('='); }
+"+="	{ ECHO; CONCAT; return(ADD_ASSIGN); }
+"-="	{ ECHO; CONCAT; return(SUB_ASSIGN); }
+"*="	{ ECHO; CONCAT; return(MUL_ASSIGN); }
+"/="	{ ECHO; CONCAT; return(DIV_ASSIGN); }
+"%="	{ ECHO; CONCAT; return(MOD_ASSIGN); }
 
  /* Logical */
-"&&"	{ ECHO; return(AND_OP); }
-"||"	{ ECHO; return(OR_OP); }
-"!"		{ ECHO; return('!'); }
+"&&"	{ ECHO; CONCAT; return(AND_OP); }
+"||"	{ ECHO; CONCAT; return(OR_OP); }
+"!"		{ ECHO; CONCAT; return('!'); }
 
  /* Delimiters */
-"("		{ ECHO; return('('); }
-")"		{ ECHO; return(')'); }
-"{"		{ ECHO; return('{'); }
-"}"		{ ECHO; return('}'); }
-"["		{ ECHO; return('['); }
-"]"		{ ECHO; return(']'); }
-","		{ ECHO; return(','); }
+"("		{ ECHO; CONCAT; return('('); }
+")"		{ ECHO; CONCAT; return(')'); }
+"{"		{ ECHO; CONCAT; return('{'); }
+"}"		{ ECHO; CONCAT; return('}'); }
+"["		{ ECHO; CONCAT; return('['); }
+"]"		{ ECHO; CONCAT; return(']'); }
+","		{ ECHO; CONCAT; return(','); }
 
  /* Print Keywords */	
-"print"		{ ECHO; return(PRINT);  }
+"print"		{ ECHO; CONCAT; return(PRINT);  }
 
  /* Condition and Loop Keywords */
-"if"		{ ECHO; return(IF); }
-"else"		{ ECHO; return(ELSE); }
-"for"		{ ECHO; return(FOR); }
-"while"		{ ECHO; return(WHILE); }
+"if"		{ ECHO; CONCAT; return(IF); }
+"else"		{ ECHO; CONCAT; return(ELSE); }
+"for"		{ ECHO; CONCAT; return(FOR); }
+"while"		{ ECHO; CONCAT; return(WHILE); }
 
  /* Declaration Keywords */
-"void"		{ ECHO; return(VOID); }
-"int"		{ ECHO; return(INT);}
-"float"  	{ ECHO; return(FLOAT);}
-"string"  	{ ECHO; return(STRING);}
-"bool"  	{ ECHO; return(BOOL);}
+"void"		{ ECHO; CONCAT; return(VOID); }
+"int"		{ ECHO; CONCAT; return(INT);}
+"float"  	{ ECHO; CONCAT; return(FLOAT);}
+"string"  	{ ECHO; CONCAT; return(STRING);}
+"bool"  	{ ECHO; CONCAT; return(BOOL);}
 
  /* boolean Keywords */
-"true"      { ECHO; return(TRUE); }
-"false"     { ECHO; return(FALSE); }
+"true"      { ECHO; CONCAT; return(TRUE); }
+"false"     { ECHO; CONCAT; return(FALSE); }
 
-"return"    { ECHO; return(RETURN); }
+"return"    { ECHO; CONCAT; return(RETURN); }
 
  /* String Constant */
-\"				        { ECHO; BEGIN STRING_STATE; return(QUOTA);}
-<STRING_STATE>\"		{ ECHO; BEGIN INITIAL; return(QUOTA);}
-<STRING_STATE>[^"]*		{ ECHO; return(STRING_CONST);}
+\"				        { ECHO; CONCAT; BEGIN STRING_STATE; return(QUOTA);}
+<STRING_STATE>\"		{ ECHO; CONCAT; BEGIN INITIAL; return(QUOTA);}
+<STRING_STATE>[^"]*		{ ECHO; CONCAT; return(STRING_CONST);}
 
  /* Number Constant */
-{integer}	{ ECHO; return(I_CONST); }
-{float}	    { ECHO; return(F_CONST); }
+{integer}	{ ECHO; CONCAT; return(I_CONST); }
+{float}	    { ECHO; CONCAT; return(F_CONST); }
 
  /* C type Comment */
-"/*"				{ ECHO; BEGIN COMMENT; }
-<COMMENT>[^*\n]+	{ ECHO; }
-<COMMENT>\n			{ ECHO; }
-<COMMENT>"*"		{ ECHO;  }
-<COMMENT>"*/"		{ ECHO; BEGIN INITIAL; }
+"/*"				{ ECHO; CONCAT; BEGIN COMMENT; }
+<COMMENT>[^*\n]+	{ ECHO; CONCAT; }
+<COMMENT>\n			{ ECHO; CONCAT; line_num++; printf("%d: ", line_num);}
+<COMMENT>"*"		{ ECHO; CONCAT;  }
+<COMMENT>"*/"		{ ECHO; CONCAT; BEGIN INITIAL; }
 
  /* C++ type Comment */
-\/\/.*	{ ECHO; }
+\/\/.*	{ ECHO; CONCAT; }
 
  /* Variable ID */
- {id}       { ECHO; return(ID); }
+ {id}       { ECHO; CONCAT; return(ID); }
 
  /* others */
 
-[;]         { ECHO; return(SEMICOLON); }
-[\n]        { ECHO; }
-[ \t]		{ ECHO; } /* Ignore */
-[^ \t\n] 	{ ECHO; } /* Ignore other charactor sets */
-<<EOF>>     { ECHO; yyterminate();}
+[;]         { ECHO; CONCAT; return(SEMICOLON); }
+[\n]        { ECHO; CONCAT; line_num++; printf("%d: ", line_num); }
+[ \t]		{ ECHO; CONCAT; } /* Ignore */
+[^ \t\n] 	{ ECHO; CONCAT; } /* Ignore other charactor sets */
+<<EOF>>     { ECHO; CONCAT; yyterminate();}
 
 %%
 

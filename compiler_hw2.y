@@ -2,14 +2,44 @@
 
 /*	Definition section */
 %{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int table_depth = 0;
+
+struct Entry{
+    int index;
+    struct Entry * next;
+
+    char *name;
+    char *kind;
+    char *type;
+    int scope;
+    char *attribute;
+};
+
+struct Table{
+    int table_depth;
+    struct Entry * entry_head;
+    struct Entry * entry_tail;
+    struct Table * pre;
+};
+
+struct Table *header = NULL;
+struct Table *current_table = NULL;
+
+
 extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 
+void *new_table();
+
 /* Symbol table function - you can add new function if needed. */
+void *create_symbol();
 int lookup_symbol();
-void create_symbol();
 void insert_symbol();
 void dump_symbol();
 
@@ -43,7 +73,6 @@ void dump_symbol();
 %token <i_val> I_CONST
 %token <f_val> F_CONST
 %token <string> STRING_CONST
-%token <i_val> '('
 
 /* Nonterminal with return, which need to sepcify type */
 %type <f_val> stat
@@ -77,7 +106,7 @@ print_func
 ;
 
 compound_stat
-    : '{' program '}'
+    : '{' { create_symbol();} program '}' { lookup_symbol();}
 ;
 
 expression_stat
@@ -199,11 +228,10 @@ identifier_list
 declarator2
     : '(' identifier_list2 ')' 
     | '(' ')'
-    |
 ;
 
 identifier_list2
-    : initializer ',' identifier_list2
+    : identifier_list2 ',' initializer 
     | initializer
 ;
 
@@ -234,6 +262,8 @@ type
 int main(int argc, char** argv)
 {
     yylineno = 0;
+    printf("1: ");
+    current_table = create_symbol();  //global symbol_table
 
     yyparse();
 	printf("\nTotal lines: %d \n",yylineno);
@@ -249,9 +279,20 @@ void yyerror(char *s)
     printf("\n|-----------------------------------------------|\n\n");
 }
 
-void create_symbol() {}
+void *create_symbol() {
+    struct Table * ptr = malloc(sizeof(struct Table));
+    ptr->table_depth = table_depth++;
+    ptr->entry_head = malloc(sizeof(struct Entry));
+    ptr->entry_tail = NULL;
+    ptr->pre = NULL;
+
+    printf("in create_symbol, depth = %d", ptr->table_depth);
+    return ptr;
+}
 void insert_symbol() {}
-int lookup_symbol() {}
+int lookup_symbol() {
+    printf("in lookup_symbol");
+}
 void dump_symbol() {
     printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
            "Index", "Name", "Kind", "Type", "Scope", "Attribute");
