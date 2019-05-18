@@ -7,35 +7,36 @@
 #include <string.h>
 
 int table_depth = 0;
+const char *type_f = "function";
+const char *type_p = "parameter";
+const char *type_v = "variable";
 
 struct Entry{
-    int index;
-    struct Entry * next;
+    struct Entry * entry_next;
+    struct Entry * entry_pre;
 
-    char *name;
-    char *kind;
-    char *type;
+    int index;
+    char name[20];
+    char kind[20];
+    char type[20];
     int scope;
-    char *attribute;
+    char attribute[20];
 };
 
 struct Table{
     int table_depth;
-    struct Entry * entry_head;
-    struct Entry * entry_tail;
+    struct Entry * entry_header;
+    struct Entry * entry_current;
     struct Table * pre;
 };
 
-struct Table *header = NULL;
-struct Table *current_table = NULL;
-
+struct Table *table_header = NULL;
+struct Table *table_current = NULL;
 
 extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
-
-void *new_table();
 
 /* Symbol table function - you can add new function if needed. */
 void *create_symbol();
@@ -49,9 +50,11 @@ void dump_symbol();
  * nonterminal and token type
  */
 %union {
-    int i_val;
-    double f_val;
-    char* string;
+    int i_val;    //not use
+    double f_val; //not use
+    char* string; //not use
+    char* symbol_name;  //return ID
+    char* symbol_type;  //return type
 }
 
 /* Token */
@@ -67,15 +70,18 @@ void dump_symbol();
 /* Token without return */
 %token PRINT 
 %token IF ELSE FOR WHILE 
-%token ID SEMICOLON QUOTA
+%token SEMICOLON QUOTA ID
 
 /* Token with return, which need to sepcify type */
 %token <i_val> I_CONST
 %token <f_val> F_CONST
-%token <string> STRING_CONST
+%token <string> STRING_CONST 
 
 /* Nonterminal with return, which need to sepcify type */
-%type <f_val> stat
+%type <f_val> stat 
+// %type <string> declaration
+%type <symbol_type> type
+%type <symbol_name> ID
 
 /* Yacc will start at this nonterminal */
 %start program
@@ -97,8 +103,10 @@ stat
 ;
 
 declaration
-    : type ID '=' expression SEMICOLON
-    | type ID SEMICOLON
+    : type ID '=' expression SEMICOLON 
+        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_v);}
+    | type ID SEMICOLON {}
+        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_v);}
 ;
 
 print_func
@@ -106,7 +114,10 @@ print_func
 ;
 
 compound_stat
-    : '{' { create_symbol();} program '}' { lookup_symbol();}
+    : 
+    '{'     { create_symbol(); } 
+    program 
+    '}'     { dump_symbol(); }
 ;
 
 expression_stat
@@ -212,6 +223,7 @@ return_statement
 
 function_declaration
     : type ID declarator compound_stat 
+        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_f);}
     | ID declarator2 SEMICOLON
 ;
 
@@ -221,8 +233,10 @@ declarator
 ;
 
 identifier_list
-    : identifier_list ',' type ID
+    : identifier_list ',' type ID 
+        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($3, $4, type_p);}
     | type ID
+        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_p);}
 ;
 
 declarator2
@@ -247,9 +261,9 @@ initializer
 /* actions can be taken when meet the token or rule */
 /* $$ = yylval.val; */
 type
-    : INT {}
+    : INT { /* $$ = yylval.symbol_type; printf("$$ = %s", $$); */}
     | FLOAT {}
-    | BOOL  {}
+    | BOOL  { /* $$ = yylval.symbol_type; */}
     | STRING {}
     | VOID {}
 ;
@@ -262,9 +276,10 @@ type
 int main(int argc, char** argv)
 {
     yylineno = 0;
-    printf("1: ");
-    current_table = create_symbol();  //global symbol_table
+    table_current = create_symbol();  //global symbol_table
+    table_header = table_current;
 
+    printf("1: ");  
     yyparse();
 	printf("\nTotal lines: %d \n",yylineno);
 
@@ -280,20 +295,71 @@ void yyerror(char *s)
 }
 
 void *create_symbol() {
+    //initialize symbol_table
     struct Table * ptr = malloc(sizeof(struct Table));
-    ptr->table_depth = table_depth++;
-    ptr->entry_head = malloc(sizeof(struct Entry));
-    ptr->entry_tail = NULL;
-    ptr->pre = NULL;
+    ptr->table_depth = table_depth++;   //depth == scope
+    ptr->entry_header = NULL;
+    ptr->entry_current = ptr->entry_header;
+    ptr->pre = table_current;
 
     printf("in create_symbol, depth = %d", ptr->table_depth);
     return ptr;
 }
-void insert_symbol() {}
-int lookup_symbol() {
-    printf("in lookup_symbol");
+void insert_symbol(char *t, char* n, char* k) {
+    
+    struct Table *ptr = table_current; 
+    struct Entry *e_ptr = malloc(sizeof(struct Entry));
+    //printf("\nin insert_symbol, %s, %s, %s, %d", n, t, k, ptr->table_depth);
+    
+    if(ptr->entry_header == NULL){
+        ptr->entry_header = e_ptr;
+        e_ptr->entry_pre = NULL;
+        e_ptr->index = 0;
+    }else{
+        e_ptr->entry_pre = ptr->entry_current;
+        ptr->entry_current->entry_next = e_ptr; 
+        e_ptr->index = (ptr->entry_current->index) + 1;
+    }
+    
+    ptr->entry_current = e_ptr;
+    //initialize entry
+    e_ptr->entry_next = NULL;
+    e_ptr->scope = ptr->table_depth;
+    memset(e_ptr->type, 0, sizeof(e_ptr->type));
+    memset(e_ptr->kind, 0, sizeof(e_ptr->kind));
+    memset(e_ptr->name, 0, sizeof(e_ptr->name));
+
+    strcpy(e_ptr->type, t);
+    strcpy(e_ptr->kind, k);
+    strcpy(e_ptr->name, n);  
+    //e_ptr->attribute = NULL;
+
+    //printf("\n%d, %s, %s, %s, %d\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
+
+int lookup_symbol() {
+    printf("in lookup_symbol\n");
+    //check semetic_error
+}
+
 void dump_symbol() {
-    printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
-           "Index", "Name", "Kind", "Type", "Scope", "Attribute");
+    struct Table *ptr = table_current;
+    if(ptr->entry_header == NULL){ 
+        //not entry table, print nothing and drop the table
+        return;
+    }else{
+        //print symbol_table && delete it
+        printf("in dump_symbol\n");
+        printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
+            "Index", "Name", "Kind", "Type", "Scope", "Attribute");
+        
+        struct Entry *e_ptr = ptr->entry_header;
+        while(e_ptr != NULL){
+            printf("%-10d%-10s%-12s%-10s%-10d%-10s\n",
+            e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope, e_ptr->attribute);
+
+            e_ptr = e_ptr->entry_next;
+        }
+    
+    }
 }

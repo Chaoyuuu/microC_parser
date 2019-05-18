@@ -71,9 +71,9 @@ extern int yydebug;
     ELSE = 281,
     FOR = 282,
     WHILE = 283,
-    ID = 284,
-    SEMICOLON = 285,
-    QUOTA = 286,
+    SEMICOLON = 284,
+    QUOTA = 285,
+    ID = 286,
     I_CONST = 287,
     F_CONST = 288,
     STRING_CONST = 289
@@ -106,9 +106,9 @@ extern int yydebug;
 #define ELSE 281
 #define FOR 282
 #define WHILE 283
-#define ID 284
-#define SEMICOLON 285
-#define QUOTA 286
+#define SEMICOLON 284
+#define QUOTA 285
+#define ID 286
 #define I_CONST 287
 #define F_CONST 288
 #define STRING_CONST 289
@@ -118,13 +118,15 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 51 "compiler_hw2.y" /* yacc.c:1909  */
+#line 52 "compiler_hw2.y" /* yacc.c:1909  */
 
-    int i_val;
-    double f_val;
-    char* string;
+    int i_val;    //not use
+    double f_val; //not use
+    char* string; //not use
+    char* symbol_name;  //return ID
+    char* symbol_type;  //return type
 
-#line 128 "y.tab.h" /* yacc.c:1909  */
+#line 130 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
