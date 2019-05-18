@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "y.tab.h"
 
 int table_depth = 0;
 const char *type_f = "function";
@@ -20,7 +21,7 @@ struct Entry{
     char kind[20];
     char type[20];
     int scope;
-    char attribute[20];
+    char attribute[50];
 };
 
 struct Table{
@@ -39,7 +40,7 @@ extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 
 /* Symbol table function - you can add new function if needed. */
-void *initial_symbol();
+void get_attribute();
 void create_symbol();
 int lookup_symbol();
 void insert_symbol();
@@ -85,7 +86,7 @@ void dump_symbol();
 %type <symbol_name> ID
 
 /* Yacc will start at this nonterminal */
-%start program
+%start program 
 
 /* Grammar section */
 %%
@@ -230,9 +231,9 @@ return_statement
 
 
 function_declaration
-    : type ID {create_symbol(); }
+    : type ID { create_symbol(); }
       declarator compound_stat 
-      { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_f);}
+      { insert_symbol($1, $2, type_f); }
     | ID declarator2 SEMICOLON
 ;
 
@@ -243,9 +244,9 @@ declarator
 
 identifier_list
     : identifier_list ',' type ID 
-        { insert_symbol($3, $4, type_p);}
+        { get_attribute($3); insert_symbol($3, $4, type_p);}
     | type ID
-        { insert_symbol($1, $2, type_p);}
+        { get_attribute($1); insert_symbol($1, $2, type_p);}
 ;
 
 declarator2
@@ -280,8 +281,6 @@ type
 %%
 
 /* C code section */
-#include "stdio.h"
-
 int main(int argc, char** argv)
 {
     yylineno = 0;
@@ -294,6 +293,7 @@ int main(int argc, char** argv)
 
     printf("1: ");  
     yyparse();
+    dump_symbol();
 	printf("\nTotal lines: %d \n",yylineno);
 
     return 0;
@@ -348,6 +348,7 @@ void insert_symbol(char *t, char* n, char* k) {
     memset(e_ptr->type, 0, sizeof(e_ptr->type));
     memset(e_ptr->kind, 0, sizeof(e_ptr->kind));
     memset(e_ptr->name, 0, sizeof(e_ptr->name));
+    memset(e_ptr->attribute, 0, sizeof(e_ptr->attribute));
 
     strcpy(e_ptr->type, t);
     strcpy(e_ptr->kind, k);
@@ -355,6 +356,19 @@ void insert_symbol(char *t, char* n, char* k) {
     //e_ptr->attribute = NULL;
 
     // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
+}
+
+void get_attribute(char *t){
+    // get entry_attribute
+    struct Table *ptr = table_current->pre;
+    struct Entry *e_ptr = ptr->entry_current;
+
+    if(strlen(e_ptr->attribute) != 0){
+        strcat(e_ptr->attribute, ", ");
+    }
+    strcat(e_ptr->attribute, t);
+
+    printf("\nin get_attribute = %s\n", e_ptr->attribute);
 }
 
 int lookup_symbol() {

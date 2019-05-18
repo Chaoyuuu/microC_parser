@@ -1200,7 +1200,7 @@ case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 case YY_STATE_EOF(STRING_STATE):
 #line 121 "compiler_hw2.l"
-{ ECHO; CONCAT; yyterminate();}
+{ ECHO; CONCAT;  yyterminate();}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
@@ -2224,6 +2224,6 @@ void yyfree (void * ptr )
 
 int yywrap()
 {
-    return 1;
+    return 1 ;
 }
 

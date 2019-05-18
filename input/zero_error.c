@@ -5,7 +5,7 @@
 float c = 150;
 float c = 1.5 ;
 
-bool loop (int n, int m) {
+bool loop (int n, float m) {
     while (n > m) {
         n--;
     }

@@ -118,11 +118,11 @@ id			{letter}+({letter}|{digit})*
 [\n]        { ECHO; CONCAT; line_num++; printf("%d: ", line_num); }
 [ \t]		{ ECHO; CONCAT; } /* Ignore */
 [^ \t\n] 	{ ECHO; CONCAT; } /* Ignore other charactor sets */
-<<EOF>>     { ECHO; CONCAT; yyterminate();}
+<<EOF>>     { ECHO; CONCAT;  yyterminate();}
 
 %%
 
 int yywrap()
 {
-    return 1;
+    return 1 ;
 }
