@@ -39,7 +39,8 @@ extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 
 /* Symbol table function - you can add new function if needed. */
-void *create_symbol();
+void *initial_symbol();
+void create_symbol();
 int lookup_symbol();
 void insert_symbol();
 void dump_symbol();
@@ -65,7 +66,7 @@ void dump_symbol();
 %token STRING
 %token INC_OP DEC_OP GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
 %token ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
-%token TRUE FALSE RETURN
+%token TRUE FALSE RETURN 
 
 /* Token without return */
 %token PRINT 
@@ -105,7 +106,7 @@ stat
 declaration
     : type ID '=' expression SEMICOLON 
         { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_v);}
-    | type ID SEMICOLON {}
+    | type ID SEMICOLON 
         { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_v);}
 ;
 
@@ -115,7 +116,7 @@ print_func
 
 compound_stat
     : 
-    '{'     { create_symbol(); } 
+    '{'     { /* create_symbol(); */} 
     program 
     '}'     { dump_symbol(); }
 ;
@@ -128,13 +129,20 @@ expression_stat
 ;
 
 selection_statement
-    : IF '(' expression ')' compound_stat 
-    | selection_statement ELSE compound_stat 
-    | selection_statement IF ELSE '(' expression ')' compound_stat 
+    : IF { create_symbol(); }
+      '(' expression ')' compound_stat 
+    | selection_statement 
+      ELSE { create_symbol(); } 
+      compound_stat 
+    | selection_statement
+      IF ELSE { create_symbol(); }
+      '(' expression ')' compound_stat 
 ;
 
 while_statement
-    : WHILE '(' expression ')' compound_stat
+    : WHILE 
+        { create_symbol(); }
+    '(' expression ')' compound_stat 
 ;
 
 
@@ -222,8 +230,9 @@ return_statement
 
 
 function_declaration
-    : type ID declarator compound_stat 
-        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_f);}
+    : type ID {create_symbol(); }
+      declarator compound_stat 
+      { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_f);}
     | ID declarator2 SEMICOLON
 ;
 
@@ -234,9 +243,9 @@ declarator
 
 identifier_list
     : identifier_list ',' type ID 
-        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($3, $4, type_p);}
+        { insert_symbol($3, $4, type_p);}
     | type ID
-        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_p);}
+        { insert_symbol($1, $2, type_p);}
 ;
 
 declarator2
@@ -276,8 +285,12 @@ type
 int main(int argc, char** argv)
 {
     yylineno = 0;
+
+    create_symbol();
+    /*
     table_current = create_symbol();  //global symbol_table
     table_header = table_current;
+    */
 
     printf("1: ");  
     yyparse();
@@ -294,22 +307,29 @@ void yyerror(char *s)
     printf("\n|-----------------------------------------------|\n\n");
 }
 
-void *create_symbol() {
+void create_symbol() {
     //initialize symbol_table
     struct Table * ptr = malloc(sizeof(struct Table));
+
     ptr->table_depth = table_depth++;   //depth == scope
     ptr->entry_header = NULL;
     ptr->entry_current = ptr->entry_header;
     ptr->pre = table_current;
 
-    printf("in create_symbol, depth = %d", ptr->table_depth);
-    return ptr;
+    table_current = ptr;
+
+    if(table_header == NULL){
+        table_header = table_current;
+    }
+
+    // printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
 }
+
 void insert_symbol(char *t, char* n, char* k) {
     
     struct Table *ptr = table_current; 
     struct Entry *e_ptr = malloc(sizeof(struct Entry));
-    //printf("\nin insert_symbol, %s, %s, %s, %d", n, t, k, ptr->table_depth);
+    // printf("\n----in insert_symbol, %s, %s, %s, %d----\n", n, t, k, ptr->table_depth);
     
     if(ptr->entry_header == NULL){
         ptr->entry_header = e_ptr;
@@ -334,7 +354,7 @@ void insert_symbol(char *t, char* n, char* k) {
     strcpy(e_ptr->name, n);  
     //e_ptr->attribute = NULL;
 
-    //printf("\n%d, %s, %s, %s, %d\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
+    // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 
 int lookup_symbol() {
@@ -343,13 +363,14 @@ int lookup_symbol() {
 }
 
 void dump_symbol() {
+    // printf("\n----in dump_symbol");
+
     struct Table *ptr = table_current;
     if(ptr->entry_header == NULL){ 
-        //not entry table, print nothing and drop the table
-        return;
+        //not entry, print nothing and drop the table
+        // printf(", depth = %d, current = %p----\n", ptr->table_depth, ptr);
     }else{
         //print symbol_table && delete it
-        printf("in dump_symbol\n");
         printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
             "Index", "Name", "Kind", "Type", "Scope", "Attribute");
         
@@ -362,4 +383,7 @@ void dump_symbol() {
         }
     
     }
+
+    table_current = ptr->pre;
+    table_depth --;
 }

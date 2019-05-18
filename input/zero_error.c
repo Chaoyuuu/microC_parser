@@ -14,7 +14,6 @@ bool loop (int n, int m) {
     x + a --;
 }
 
-
 int main() {
     // Declaration
     int x;
@@ -27,7 +26,7 @@ int main() {
     // if condition
     if (a > 10) {
         x += a;
-        print(x);
+        print(x);     
     } else {
         x = a % 10 + 10 * 7; /* Arithmetic */
         print(x);
