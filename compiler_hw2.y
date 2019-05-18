@@ -45,6 +45,7 @@ void create_symbol();
 int lookup_symbol();
 void insert_symbol();
 void dump_symbol();
+void print_semantic_error();
 
 %}
 
@@ -106,9 +107,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_v);}
+        { lookup_symbol($2, 1); insert_symbol($1, $2, type_v);}
     | type ID SEMICOLON 
-        { /* printf("\ntype = %s, ID = %s, entry = %s\n", $1, $2, type_v); */insert_symbol($1, $2, type_v);}
+        { lookup_symbol($2, 1); insert_symbol($1, $2, type_v);}
 ;
 
 print_func
@@ -130,7 +131,8 @@ expression_stat
 ;
 
 selection_statement
-    : IF { create_symbol(); }
+    : error ')'
+    | IF { create_symbol(); }
       '(' expression ')' compound_stat 
     | selection_statement 
       ELSE { create_symbol(); } 
@@ -265,7 +267,7 @@ initializer
     | QUOTA STRING_CONST QUOTA
     | TRUE
     | FALSE
-    | ID
+    | ID { lookup_symbol($1); }
 ;
 
 /* actions can be taken when meet the token or rule */
@@ -305,6 +307,8 @@ void yyerror(char *s)
     printf("| Error found in line %d: %s\n", yylineno, buf);
     printf("| %s", s);
     printf("\n|-----------------------------------------------|\n\n");
+
+    return;
 }
 
 void create_symbol() {
@@ -334,6 +338,7 @@ void insert_symbol(char *t, char* n, char* k) {
     if(ptr->entry_header == NULL){
         ptr->entry_header = e_ptr;
         e_ptr->entry_pre = NULL;
+        e_ptr->entry_next = NULL;
         e_ptr->index = 0;
     }else{
         e_ptr->entry_pre = ptr->entry_current;
@@ -368,12 +373,41 @@ void get_attribute(char *t){
     }
     strcat(e_ptr->attribute, t);
 
-    printf("\nin get_attribute = %s\n", e_ptr->attribute);
+    // printf("\nin get_attribute = %s\n", e_ptr->attribute);
 }
 
-int lookup_symbol() {
-    printf("in lookup_symbol\n");
+int lookup_symbol(char* name, int flag) {
+    //printf("\nin lookup_symbol\n");
     //check semetic_error
+
+    struct Table *head = table_header;
+    struct Table *ptr = table_current;
+    struct Entry *e_ptr = ptr->entry_header;
+
+    if(flag == 1){  //check if Redeclared variable
+        while(e_ptr != NULL){
+            if(!strcmp(e_ptr->name, name)){
+                printf("\nRedeclared variable !!!\n");
+                break;
+            }
+            e_ptr = e_ptr->entry_next;
+        }
+    }else{      //check if Undeclared variable
+        while(ptr != NULL){
+            printf("\nthe depth = %d", ptr->table_depth);
+            e_ptr = ptr->entry_header;
+            while(e_ptr != NULL){
+                if(!strcmp(e_ptr->name, name)){
+                    break;
+                }
+                e_ptr = e_ptr->entry_next;
+            }
+            ptr = ptr->pre;
+            
+        }
+        printf("\nUndeclared variable !!!\n");
+    }
+    
 }
 
 void dump_symbol() {
@@ -400,4 +434,8 @@ void dump_symbol() {
 
     table_current = ptr->pre;
     table_depth --;
+}
+
+void print_semantic_error(){
+    
 }

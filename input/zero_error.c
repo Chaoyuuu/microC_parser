@@ -26,11 +26,14 @@ int main() {
     // if condition
     if (a > 10) {
         x += a;
+        int i;
         print(x);     
     } else {
         x = a % 10 + 10 * 7; /* Arithmetic */
         print(x);
     }
+
+    float a;
     loop(x, i);
     print("Hello World");
 
