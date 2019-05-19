@@ -10,8 +10,6 @@ bool loop (int n, float m) {
         n--;
     }
     return true;
-    x = (a+b) - (87 / 96 -9 +2 ) % 1;
-    x + a --;
 }
 
 int main() {

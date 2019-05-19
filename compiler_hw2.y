@@ -45,7 +45,7 @@ void create_symbol();
 int lookup_symbol();
 void insert_symbol();
 void dump_symbol();
-void print_semantic_error();
+void semantic_error();
 
 %}
 
@@ -378,13 +378,10 @@ void get_attribute(char *t){
 
 int lookup_symbol(char* name, int flag) {
     //printf("\nin lookup_symbol\n");
-    //check semetic_error
-
-    struct Table *head = table_header;
-    struct Table *ptr = table_current;
-    struct Entry *e_ptr = ptr->entry_header;
+    //check semetic_error 
 
     if(flag == 1){  //check if Redeclared variable
+        struct Entry *e_ptr = table_current->entry_header;
         while(e_ptr != NULL){
             if(!strcmp(e_ptr->name, name)){
                 printf("\nRedeclared variable !!!\n");
@@ -393,13 +390,19 @@ int lookup_symbol(char* name, int flag) {
             e_ptr = e_ptr->entry_next;
         }
     }else{      //check if Undeclared variable
+        struct Table *ptr = table_current;
         while(ptr != NULL){
-            printf("\nthe depth = %d", ptr->table_depth);
-            e_ptr = ptr->entry_header;
+            // printf("\nthe depth = %d\n", ptr->table_depth);
+            struct Entry *e_ptr = ptr->entry_header;
             while(e_ptr != NULL){
                 if(!strcmp(e_ptr->name, name)){
-                    break;
+                    // printf("OK\n");
+                    return;
                 }
+                /*
+                printf("%-10d%-10s%-12s%-10s%-10d%-10s\n",
+                   e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope, e_ptr->attribute);
+                */
                 e_ptr = e_ptr->entry_next;
             }
             ptr = ptr->pre;
