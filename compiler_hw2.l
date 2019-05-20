@@ -7,14 +7,17 @@
 
 extern YYSTYPE yylval; //YYSTYPE
 extern void yyerror(char *s);
+
 char buf[BUF_SIZE];
 char error_msg[BUF_SIZE];
+char syntax_buf[BUF_SIZE];
 
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, BUF_SIZE - strlen(buf) - 1); }
 
 int line_num = 1;
 int error_flag = 0;
+int syntax_flag = 0;
 
 %}
 
@@ -119,14 +122,16 @@ id			{letter}+({letter}|{digit})*
 
 [;]         { ECHO; CONCAT; return(SEMICOLON); }
 [\n]        { ECHO; CONCAT; line_num++; 
-                
-              if(error_flag == 4){
-                    yyerror( "syntax error\n");
+    
+                if(error_flag != 0){
+                    yyerror(error_msg);
+                    error_flag = 0;
+                 }
+
+                //if syntax_error, close parser
+                if(syntax_flag != 0){
                     yyterminate();
-              }else if(error_flag != 0){
-                  yyerror(error_msg);
-                  error_flag = 0;
-              }
+                } 
               memset(buf, 0, BUF_SIZE);
               printf("%d: ", line_num); 
             }

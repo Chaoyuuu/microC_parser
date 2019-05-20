@@ -2,7 +2,7 @@
  * 2019 Spring Compiler Course Assignment 2 
  */
 
-float c = 1.5;
+floa c = 1.5;
 int b;
 // int tmp(int c, int b);
 

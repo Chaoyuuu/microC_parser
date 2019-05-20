@@ -38,10 +38,11 @@ extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
+extern char syntax_buf[256];
 extern int error_flag; //1.redefined 2.undefined
+extern int syntax_flag;
 extern char error_msg[256];
 extern void yyerror(char *s);
-
 
 /* Symbol table function - you can add new function if needed. */
 void get_attribute();
@@ -111,9 +112,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { lookup_symbol($2, 1); insert_symbol($1, $2, type_v);}
+        { /* lookup_symbol($2, 1); */ insert_symbol($1, $2, type_v);}
     | type ID SEMICOLON 
-        { lookup_symbol($2, 1); insert_symbol($1, $2, type_v);}
+        { /* lookup_symbol($2, 1); */ insert_symbol($1, $2, type_v);}
 ;
 
 print_func
@@ -299,6 +300,14 @@ int main(int argc, char** argv)
 
     printf("1: ");  
     yyparse();
+    if(syntax_flag != 0){
+        // print syntax error msg
+        printf("\n|-----------------------------------------------|\n");
+    printf("| Error found in line %d: %s\n", yylineno, syntax_buf);
+    printf("| %s","syntax error");
+    printf("\n|-----------------------------------------------|\n\n");
+
+    } 
     if(error_flag != 3){
         dump_symbol();
         printf("\nTotal lines: %d \n",yylineno);
@@ -310,19 +319,18 @@ int main(int argc, char** argv)
 
 void yyerror(char *s)
 {
-    /*
-    if(!strcmp(s, "syntax error") && error_flag == 0){
-        error_flag = 4;
+    if(!strcmp(s, "syntax error")){
+        memset(syntax_buf, 0, sizeof(syntax_buf));
+        strcpy(syntax_buf, buf);
+        syntax_flag = 1;
         return;
     }
-    */
 
     printf("\n|-----------------------------------------------|\n");
     printf("| Error found in line %d: %s", yylineno, buf);
     printf("| %s",s);
     printf("\n|-----------------------------------------------|\n\n");
 
-    return;
 }
 
 void create_symbol() {
@@ -397,8 +405,7 @@ void lookup_symbol(char* name, int flag) {
     if(flag == 1){  //check if Redeclared variable
         struct Entry *e_ptr = table_current->entry_header;
         while(e_ptr != NULL){
-            if(!strcmp(e_ptr->name, name)){
-                // printf("\nRedeclared variable !!!\n");
+            if(strcmp(e_ptr->kind, "function") != 0 && strcmp(e_ptr->name, name) == 0){  // Redeclared variable !!!
                 memset(error_msg, 0, sizeof(error_msg));
                 strcat(error_msg, "Redeclared variable ");
                 strcat(error_msg, name);
@@ -410,11 +417,9 @@ void lookup_symbol(char* name, int flag) {
     }else{      //check if Undeclared variable
         struct Table *ptr = table_current;
         while(ptr != NULL){
-            // printf("\nthe depth = %d\n", ptr->table_depth);
             struct Entry *e_ptr = ptr->entry_header;
             while(e_ptr != NULL){
-                if(!strcmp(e_ptr->name, name)){
-                    // printf("OK\n");
+                if(strcmp(e_ptr->kind, "function") != 0 && strcmp(e_ptr->name, name) == 0){ //declared variable
                     return;
                 }
                 /*
@@ -424,16 +429,13 @@ void lookup_symbol(char* name, int flag) {
                 e_ptr = e_ptr->entry_next;
             }
             ptr = ptr->pre;
-            
         }
-        // printf("\nUndeclared variable !!!\n");
+        // Undeclared variable !!!
         memset(error_msg, 0, sizeof(error_msg));
         strcat(error_msg, "Undeclared variable ");
         strcat(error_msg, name);
         error_flag = 1;
     }
-    
-    
 }
 
 void lookup_function(char *name){

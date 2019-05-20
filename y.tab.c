@@ -100,10 +100,11 @@ extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
+extern char syntax_buf[256];
 extern int error_flag; //1.redefined 2.undefined
+extern int syntax_flag;
 extern char error_msg[256];
 extern void yyerror(char *s);
-
 
 /* Symbol table function - you can add new function if needed. */
 void get_attribute();
@@ -114,7 +115,7 @@ void insert_symbol();
 void dump_symbol();
 
 
-#line 118 "y.tab.c" /* yacc.c:339  */
+#line 119 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -222,7 +223,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 59 "compiler_hw2.y" /* yacc.c:355  */
+#line 60 "compiler_hw2.y" /* yacc.c:355  */
 
     int i_val;    //not use
     double f_val; //not use
@@ -230,7 +231,7 @@ union YYSTYPE
     char* symbol_name;  //return ID
     char* symbol_type;  //return type
 
-#line 234 "y.tab.c" /* yacc.c:355  */
+#line 235 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -247,7 +248,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 251 "y.tab.c" /* yacc.c:358  */
+#line 252 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -547,15 +548,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   100,   100,   101,   105,   106,   107,   108,   109,   113,
-     115,   120,   125,   125,   131,   132,   133,   134,   138,   139,
-     139,   141,   144,   143,   150,   149,   156,   157,   161,   162,
-     166,   167,   171,   172,   176,   177,   181,   182,   186,   187,
-     191,   192,   196,   197,   198,   202,   203,   204,   205,   206,
-     207,   211,   212,   216,   217,   218,   222,   226,   227,   228,
-     229,   230,   231,   234,   239,   239,   242,   242,   247,   248,
-     252,   254,   259,   260,   264,   265,   269,   270,   271,   272,
-     273,   274,   280,   281,   282,   283,   284
+       0,   101,   101,   102,   106,   107,   108,   109,   110,   114,
+     116,   121,   126,   126,   132,   133,   134,   135,   139,   140,
+     140,   142,   145,   144,   151,   150,   157,   158,   162,   163,
+     167,   168,   172,   173,   177,   178,   182,   183,   187,   188,
+     192,   193,   197,   198,   199,   203,   204,   205,   206,   207,
+     208,   212,   213,   217,   218,   219,   223,   227,   228,   229,
+     230,   231,   232,   235,   240,   240,   243,   243,   248,   249,
+     253,   255,   260,   261,   265,   266,   270,   271,   272,   273,
+     274,   275,   281,   282,   283,   284,   285
 };
 #endif
 
@@ -1439,151 +1440,151 @@ yyreduce:
   switch (yyn)
     {
         case 4:
-#line 105 "compiler_hw2.y" /* yacc.c:1646  */
+#line 106 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1445 "y.tab.c" /* yacc.c:1646  */
+#line 1446 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 106 "compiler_hw2.y" /* yacc.c:1646  */
+#line 107 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1451 "y.tab.c" /* yacc.c:1646  */
+#line 1452 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 107 "compiler_hw2.y" /* yacc.c:1646  */
+#line 108 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1457 "y.tab.c" /* yacc.c:1646  */
+#line 1458 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 108 "compiler_hw2.y" /* yacc.c:1646  */
+#line 109 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1463 "y.tab.c" /* yacc.c:1646  */
+#line 1464 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 109 "compiler_hw2.y" /* yacc.c:1646  */
+#line 110 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1469 "y.tab.c" /* yacc.c:1646  */
+#line 1470 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 114 "compiler_hw2.y" /* yacc.c:1646  */
-    { lookup_symbol((yyvsp[-3].symbol_name), 1); insert_symbol((yyvsp[-4].symbol_type), (yyvsp[-3].symbol_name), type_v);}
-#line 1475 "y.tab.c" /* yacc.c:1646  */
+#line 115 "compiler_hw2.y" /* yacc.c:1646  */
+    { /* lookup_symbol($2, 1); */ insert_symbol((yyvsp[-4].symbol_type), (yyvsp[-3].symbol_name), type_v);}
+#line 1476 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 116 "compiler_hw2.y" /* yacc.c:1646  */
-    { lookup_symbol((yyvsp[-1].symbol_name), 1); insert_symbol((yyvsp[-2].symbol_type), (yyvsp[-1].symbol_name), type_v);}
-#line 1481 "y.tab.c" /* yacc.c:1646  */
+#line 117 "compiler_hw2.y" /* yacc.c:1646  */
+    { /* lookup_symbol($2, 1); */ insert_symbol((yyvsp[-2].symbol_type), (yyvsp[-1].symbol_name), type_v);}
+#line 1482 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 125 "compiler_hw2.y" /* yacc.c:1646  */
+#line 126 "compiler_hw2.y" /* yacc.c:1646  */
     { /* create_symbol(); */}
-#line 1487 "y.tab.c" /* yacc.c:1646  */
+#line 1488 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 127 "compiler_hw2.y" /* yacc.c:1646  */
+#line 128 "compiler_hw2.y" /* yacc.c:1646  */
     { dump_symbol(); }
-#line 1493 "y.tab.c" /* yacc.c:1646  */
+#line 1494 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 139 "compiler_hw2.y" /* yacc.c:1646  */
+#line 140 "compiler_hw2.y" /* yacc.c:1646  */
     { create_symbol(); }
-#line 1499 "y.tab.c" /* yacc.c:1646  */
+#line 1500 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 142 "compiler_hw2.y" /* yacc.c:1646  */
+#line 143 "compiler_hw2.y" /* yacc.c:1646  */
     { create_symbol(); }
-#line 1505 "y.tab.c" /* yacc.c:1646  */
+#line 1506 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 144 "compiler_hw2.y" /* yacc.c:1646  */
+#line 145 "compiler_hw2.y" /* yacc.c:1646  */
     { create_symbol(); }
-#line 1511 "y.tab.c" /* yacc.c:1646  */
+#line 1512 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 150 "compiler_hw2.y" /* yacc.c:1646  */
+#line 151 "compiler_hw2.y" /* yacc.c:1646  */
     { create_symbol(); }
-#line 1517 "y.tab.c" /* yacc.c:1646  */
+#line 1518 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 239 "compiler_hw2.y" /* yacc.c:1646  */
+#line 240 "compiler_hw2.y" /* yacc.c:1646  */
     { create_symbol(); }
-#line 1523 "y.tab.c" /* yacc.c:1646  */
+#line 1524 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 241 "compiler_hw2.y" /* yacc.c:1646  */
+#line 242 "compiler_hw2.y" /* yacc.c:1646  */
     { insert_symbol((yyvsp[-4].symbol_type), (yyvsp[-3].symbol_name), type_f); }
-#line 1529 "y.tab.c" /* yacc.c:1646  */
+#line 1530 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 242 "compiler_hw2.y" /* yacc.c:1646  */
+#line 243 "compiler_hw2.y" /* yacc.c:1646  */
     { lookup_function((yyvsp[0].symbol_name)); }
-#line 1535 "y.tab.c" /* yacc.c:1646  */
+#line 1536 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 253 "compiler_hw2.y" /* yacc.c:1646  */
+#line 254 "compiler_hw2.y" /* yacc.c:1646  */
     { get_attribute((yyvsp[-1].symbol_type)); insert_symbol((yyvsp[-1].symbol_type), (yyvsp[0].symbol_name), type_p);}
-#line 1541 "y.tab.c" /* yacc.c:1646  */
+#line 1542 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 255 "compiler_hw2.y" /* yacc.c:1646  */
+#line 256 "compiler_hw2.y" /* yacc.c:1646  */
     { get_attribute((yyvsp[-1].symbol_type)); insert_symbol((yyvsp[-1].symbol_type), (yyvsp[0].symbol_name), type_p);}
-#line 1547 "y.tab.c" /* yacc.c:1646  */
+#line 1548 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 274 "compiler_hw2.y" /* yacc.c:1646  */
+#line 275 "compiler_hw2.y" /* yacc.c:1646  */
     { lookup_symbol((yyvsp[0].symbol_name)); }
-#line 1553 "y.tab.c" /* yacc.c:1646  */
+#line 1554 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 280 "compiler_hw2.y" /* yacc.c:1646  */
+#line 281 "compiler_hw2.y" /* yacc.c:1646  */
     { /* $$ = yylval.symbol_type; printf("$$ = %s", $$); */}
-#line 1559 "y.tab.c" /* yacc.c:1646  */
+#line 1560 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 83:
-#line 281 "compiler_hw2.y" /* yacc.c:1646  */
+#line 282 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1565 "y.tab.c" /* yacc.c:1646  */
+#line 1566 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 282 "compiler_hw2.y" /* yacc.c:1646  */
+#line 283 "compiler_hw2.y" /* yacc.c:1646  */
     { /* $$ = yylval.symbol_type; */}
-#line 1571 "y.tab.c" /* yacc.c:1646  */
+#line 1572 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 283 "compiler_hw2.y" /* yacc.c:1646  */
+#line 284 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1577 "y.tab.c" /* yacc.c:1646  */
+#line 1578 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 86:
-#line 284 "compiler_hw2.y" /* yacc.c:1646  */
+#line 285 "compiler_hw2.y" /* yacc.c:1646  */
     {}
-#line 1583 "y.tab.c" /* yacc.c:1646  */
+#line 1584 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1587 "y.tab.c" /* yacc.c:1646  */
+#line 1588 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1811,7 +1812,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 287 "compiler_hw2.y" /* yacc.c:1906  */
+#line 288 "compiler_hw2.y" /* yacc.c:1906  */
 
 
 /* C code section */
@@ -1827,6 +1828,14 @@ int main(int argc, char** argv)
 
     printf("1: ");  
     yyparse();
+    if(syntax_flag != 0){
+        // print syntax error msg
+        printf("\n|-----------------------------------------------|\n");
+    printf("| Error found in line %d: %s\n", yylineno, syntax_buf);
+    printf("| %s","syntax error");
+    printf("\n|-----------------------------------------------|\n\n");
+
+    } 
     if(error_flag != 3){
         dump_symbol();
         printf("\nTotal lines: %d \n",yylineno);
@@ -1838,19 +1847,18 @@ int main(int argc, char** argv)
 
 void yyerror(char *s)
 {
-    /*
-    if(!strcmp(s, "syntax error") && error_flag == 0){
-        error_flag = 4;
+    if(!strcmp(s, "syntax error")){
+        memset(syntax_buf, 0, sizeof(syntax_buf));
+        strcpy(syntax_buf, buf);
+        syntax_flag = 1;
         return;
     }
-    */
 
     printf("\n|-----------------------------------------------|\n");
     printf("| Error found in line %d: %s", yylineno, buf);
     printf("| %s",s);
     printf("\n|-----------------------------------------------|\n\n");
 
-    return;
 }
 
 void create_symbol() {
@@ -1925,8 +1933,7 @@ void lookup_symbol(char* name, int flag) {
     if(flag == 1){  //check if Redeclared variable
         struct Entry *e_ptr = table_current->entry_header;
         while(e_ptr != NULL){
-            if(!strcmp(e_ptr->name, name)){
-                // printf("\nRedeclared variable !!!\n");
+            if(strcmp(e_ptr->kind, "function") != 0 && strcmp(e_ptr->name, name) == 0){  // Redeclared variable !!!
                 memset(error_msg, 0, sizeof(error_msg));
                 strcat(error_msg, "Redeclared variable ");
                 strcat(error_msg, name);
@@ -1938,11 +1945,9 @@ void lookup_symbol(char* name, int flag) {
     }else{      //check if Undeclared variable
         struct Table *ptr = table_current;
         while(ptr != NULL){
-            // printf("\nthe depth = %d\n", ptr->table_depth);
             struct Entry *e_ptr = ptr->entry_header;
             while(e_ptr != NULL){
-                if(!strcmp(e_ptr->name, name)){
-                    // printf("OK\n");
+                if(strcmp(e_ptr->kind, "function") != 0 && strcmp(e_ptr->name, name) == 0){ //declared variable
                     return;
                 }
                 /*
@@ -1952,16 +1957,13 @@ void lookup_symbol(char* name, int flag) {
                 e_ptr = e_ptr->entry_next;
             }
             ptr = ptr->pre;
-            
         }
-        // printf("\nUndeclared variable !!!\n");
+        // Undeclared variable !!!
         memset(error_msg, 0, sizeof(error_msg));
         strcat(error_msg, "Undeclared variable ");
         strcat(error_msg, name);
         error_flag = 1;
     }
-    
-    
 }
 
 void lookup_function(char *name){
