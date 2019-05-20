@@ -11,6 +11,7 @@ int table_depth = 0;
 const char *type_f = "function";
 const char *type_p = "parameter";
 const char *type_v = "variable";
+const char *un_var = "Undeclared variable !!!";
 
 struct Entry{
     struct Entry * entry_next;
@@ -38,14 +39,16 @@ extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
+extern int error_flag; //1.redefined 2.undefined
+extern void print_semantic_error();
+
 
 /* Symbol table function - you can add new function if needed. */
 void get_attribute();
 void create_symbol();
-int lookup_symbol();
+void lookup_symbol();
 void insert_symbol();
 void dump_symbol();
-void semantic_error();
 
 %}
 
@@ -94,7 +97,7 @@ void semantic_error();
 
 program
     : program stat 
-    | 
+    |
 ;
 
 stat
@@ -303,11 +306,25 @@ int main(int argc, char** argv)
 
 void yyerror(char *s)
 {
+    //yyparse();
+
+    /*
+    printf("------------");
+    char *str = "\n";
+    char *tmp = strtok(buf, str);
+
+    while (tmp != NULL){
+        printf("%s\n", tmp);
+        tmp = strtok(NULL, str);
+
+    }
+    */
     printf("\n|-----------------------------------------------|\n");
     printf("| Error found in line %d: %s\n", yylineno, buf);
     printf("| %s", s);
     printf("\n|-----------------------------------------------|\n\n");
 
+    
     return;
 }
 
@@ -376,7 +393,7 @@ void get_attribute(char *t){
     // printf("\nin get_attribute = %s\n", e_ptr->attribute);
 }
 
-int lookup_symbol(char* name, int flag) {
+void lookup_symbol(char* name, int flag) {
     //printf("\nin lookup_symbol\n");
     //check semetic_error 
 
@@ -384,7 +401,8 @@ int lookup_symbol(char* name, int flag) {
         struct Entry *e_ptr = table_current->entry_header;
         while(e_ptr != NULL){
             if(!strcmp(e_ptr->name, name)){
-                printf("\nRedeclared variable !!!\n");
+                // printf("\nRedeclared variable !!!\n");
+                error_flag = 1;
                 break;
             }
             e_ptr = e_ptr->entry_next;
@@ -408,7 +426,10 @@ int lookup_symbol(char* name, int flag) {
             ptr = ptr->pre;
             
         }
-        printf("\nUndeclared variable !!!\n");
+        // printf("\nUndeclared variable !!!\n");
+        error_flag = 2;
+       
+       // yyerror(un_var);
     }
     
 }
@@ -422,7 +443,7 @@ void dump_symbol() {
         // printf(", depth = %d, current = %p----\n", ptr->table_depth, ptr);
     }else{
         //print symbol_table && delete it
-        printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
+        printf("\n\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
             "Index", "Name", "Kind", "Type", "Scope", "Attribute");
         
         struct Entry *e_ptr = ptr->entry_header;
@@ -439,6 +460,3 @@ void dump_symbol() {
     table_depth --;
 }
 
-void print_semantic_error(){
-    
-}
