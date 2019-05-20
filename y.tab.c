@@ -1831,16 +1831,14 @@ int main(int argc, char** argv)
     if(syntax_flag != 0){
         // print syntax error msg
         printf("\n|-----------------------------------------------|\n");
-    printf("| Error found in line %d: %s\n", yylineno, syntax_buf);
-    printf("| %s","syntax error");
-    printf("\n|-----------------------------------------------|\n\n");
-
+        printf("| Error found in line %d: %s\n", yylineno, syntax_buf);
+        printf("| %s","syntax error");
+        printf("\n|-----------------------------------------------|\n\n");
+        return 0;
     } 
-    if(error_flag != 3){
-        dump_symbol();
-        printf("\nTotal lines: %d \n",yylineno);
-
-    }
+    
+    dump_symbol();
+    printf("\nTotal lines: %d \n",yylineno);
 
     return 0;
 }
@@ -1974,7 +1972,7 @@ void lookup_function(char *name){
         struct Entry * e_ptr = ptr->entry_header;
         while(e_ptr != NULL){
             if(strcmp(e_ptr->kind, "function") == 0 && strcmp(e_ptr->name, name)== 0 ){
-                printf("function declared !!!");
+                // printf("function declared !!!");
                 return;
             }
             e_ptr = e_ptr->entry_next;
@@ -1982,7 +1980,7 @@ void lookup_function(char *name){
         ptr = ptr->pre;
     }
 
-    printf("\nno declared\n");
+    // printf("\nno declared\n");
     memset(error_msg, 0, sizeof(error_msg));
     strcat(error_msg, "Undeclared function ");
     strcat(error_msg, name);
