@@ -11,7 +11,6 @@ int table_depth = 0;
 const char *type_f = "function";
 const char *type_p = "parameter";
 const char *type_v = "variable";
-const char *un_var = "Undeclared variable !!!";
 
 struct Entry{
     struct Entry * entry_next;
@@ -40,13 +39,15 @@ extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 extern int error_flag; //1.redefined 2.undefined
-extern void print_semantic_error();
+extern char error_msg[256];
+extern void yyerror(char *s);
 
 
 /* Symbol table function - you can add new function if needed. */
 void get_attribute();
 void create_symbol();
 void lookup_symbol();
+void lookup_function();
 void insert_symbol();
 void dump_symbol();
 
@@ -127,7 +128,7 @@ compound_stat
 ;
 
 expression_stat
-    : selection_statement 
+    : selection_statement compound_stat 
     | while_statement 
     | expression SEMICOLON
     | return_statement 
@@ -136,13 +137,12 @@ expression_stat
 selection_statement
     : error ')'
     | IF { create_symbol(); }
-      '(' expression ')' compound_stat 
+      '(' expression ')' 
     | selection_statement 
       ELSE { create_symbol(); } 
-      compound_stat 
     | selection_statement
       IF ELSE { create_symbol(); }
-      '(' expression ')' compound_stat 
+      '(' expression ')' 
 ;
 
 while_statement
@@ -239,7 +239,8 @@ function_declaration
     : type ID { create_symbol(); }
       declarator compound_stat 
       { insert_symbol($1, $2, type_f); }
-    | ID declarator2 SEMICOLON
+    | ID  { lookup_function($1); }
+      declarator2 SEMICOLON 
 ;
 
 declarator
@@ -261,7 +262,7 @@ declarator2
 
 identifier_list2
     : identifier_list2 ',' initializer 
-    | initializer
+    | expression
 ;
 
 initializer
@@ -309,11 +310,12 @@ int main(int argc, char** argv)
 
 void yyerror(char *s)
 {
-    //yyparse();
+    /*
     if(!strcmp(s, "syntax error") && error_flag == 0){
-        error_flag = 3;
+        error_flag = 4;
         return;
     }
+    */
 
     printf("\n|-----------------------------------------------|\n");
     printf("| Error found in line %d: %s", yylineno, buf);
@@ -397,6 +399,9 @@ void lookup_symbol(char* name, int flag) {
         while(e_ptr != NULL){
             if(!strcmp(e_ptr->name, name)){
                 // printf("\nRedeclared variable !!!\n");
+                memset(error_msg, 0, sizeof(error_msg));
+                strcat(error_msg, "Redeclared variable ");
+                strcat(error_msg, name);
                 error_flag = 1;
                 break;
             }
@@ -422,10 +427,36 @@ void lookup_symbol(char* name, int flag) {
             
         }
         // printf("\nUndeclared variable !!!\n");
-        error_flag = 2;
-       
-       // yyerror(un_var);
+        memset(error_msg, 0, sizeof(error_msg));
+        strcat(error_msg, "Undeclared variable ");
+        strcat(error_msg, name);
+        error_flag = 1;
     }
+    
+    
+}
+
+void lookup_function(char *name){
+    // printf("\nin lookup_function\n");
+    struct Table * ptr = table_current;
+
+    while(ptr != NULL){
+        struct Entry * e_ptr = ptr->entry_header;
+        while(e_ptr != NULL){
+            if(strcmp(e_ptr->kind, "function") == 0 && strcmp(e_ptr->name, name)== 0 ){
+                printf("function declared !!!");
+                return;
+            }
+            e_ptr = e_ptr->entry_next;
+        }
+        ptr = ptr->pre;
+    }
+
+    printf("\nno declared\n");
+    memset(error_msg, 0, sizeof(error_msg));
+    strcat(error_msg, "Undeclared function ");
+    strcat(error_msg, name);
+    error_flag = 1;
     
 }
 

@@ -6,16 +6,15 @@
 #define BUF_SIZE 256
 
 extern YYSTYPE yylval; //YYSTYPE
+extern void yyerror(char *s);
 char buf[BUF_SIZE];
+char error_msg[BUF_SIZE];
 
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, BUF_SIZE - strlen(buf) - 1); }
 
 int line_num = 1;
 int error_flag = 0;
-
-void print_semantic_error();
-
 
 %}
 
@@ -120,11 +119,13 @@ id			{letter}+({letter}|{digit})*
 
 [;]         { ECHO; CONCAT; return(SEMICOLON); }
 [\n]        { ECHO; CONCAT; line_num++; 
-              if(error_flag == 3){
-                    yyerror( "syntax error");
+                
+              if(error_flag == 4){
+                    yyerror( "syntax error\n");
                     yyterminate();
               }else if(error_flag != 0){
-                  print_semantic_error();
+                  yyerror(error_msg);
+                  error_flag = 0;
               }
               memset(buf, 0, BUF_SIZE);
               printf("%d: ", line_num); 
@@ -139,22 +140,3 @@ int yywrap()
 {
     return 1 ;
 }
-
-void print_semantic_error(){
-    // printf("\n in print semantic error,\nflag = %d, msg = %s", error_flag, buf);
-
-    printf("\n|-----------------------------------------------|\n");
-    printf("| Error found in line %d: %s", yylineno, buf);
-
-    if(error_flag == 1)
-        printf("| %s", "Redeclared variable");
-    else if(error_flag == 2)
-        printf("| %s", "Undeclared variable");
-
-    printf("\n|-----------------------------------------------|\n\n");
-
-    error_flag = 0;
-
-
-}
-
