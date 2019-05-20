@@ -1189,7 +1189,10 @@ case 56:
 YY_RULE_SETUP
 #line 122 "compiler_hw2.l"
 { ECHO; CONCAT; line_num++; 
-              if(error_flag != 0){
+              if(error_flag == 3){
+                    yyerror( "syntax error");
+                    yyterminate();
+              }else if(error_flag != 0){
                   print_semantic_error();
               }
               memset(buf, 0, BUF_SIZE);
@@ -1198,26 +1201,26 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 129 "compiler_hw2.l"
+#line 132 "compiler_hw2.l"
 { ECHO; CONCAT; } /* Ignore */
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 130 "compiler_hw2.l"
+#line 133 "compiler_hw2.l"
 { ECHO; CONCAT; } /* Ignore other charactor sets */
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 case YY_STATE_EOF(STRING_STATE):
-#line 131 "compiler_hw2.l"
+#line 134 "compiler_hw2.l"
 { ECHO; CONCAT;  yyterminate();}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 133 "compiler_hw2.l"
+#line 136 "compiler_hw2.l"
 ECHO;
 	YY_BREAK
-#line 1221 "lex.yy.c"
+#line 1224 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2228,7 +2231,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 133 "compiler_hw2.l"
+#line 136 "compiler_hw2.l"
 
 
 

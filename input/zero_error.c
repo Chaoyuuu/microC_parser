@@ -3,7 +3,8 @@
  */
 
 float c = 1.5;
-int c;
+int b;
+// int tmp(int c, int b);
 
 bool loop(int n, int m) {
    a = 4;
@@ -25,14 +26,14 @@ int main() {
     print(y); // print
 
     // if condition
-    if (a > 10) {
+    iff (a > 10) {
         x += a;
         print(x);
     } else {
         x = a % 10 + 10 * 7; /* Arithmetic */
         print(x);
     }
-    loop(x, i);
+    loopp(x, i);
     print("Hello World");
 
     return 0; 

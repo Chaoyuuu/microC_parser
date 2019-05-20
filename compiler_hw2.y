@@ -298,8 +298,11 @@ int main(int argc, char** argv)
 
     printf("1: ");  
     yyparse();
-    dump_symbol();
-	printf("\nTotal lines: %d \n",yylineno);
+    if(error_flag != 3){
+        dump_symbol();
+        printf("\nTotal lines: %d \n",yylineno);
+
+    }
 
     return 0;
 }
@@ -307,24 +310,16 @@ int main(int argc, char** argv)
 void yyerror(char *s)
 {
     //yyparse();
-
-    /*
-    printf("------------");
-    char *str = "\n";
-    char *tmp = strtok(buf, str);
-
-    while (tmp != NULL){
-        printf("%s\n", tmp);
-        tmp = strtok(NULL, str);
-
+    if(!strcmp(s, "syntax error") && error_flag == 0){
+        error_flag = 3;
+        return;
     }
-    */
+
     printf("\n|-----------------------------------------------|\n");
-    printf("| Error found in line %d: %s\n", yylineno, buf);
-    printf("| %s", s);
+    printf("| Error found in line %d: %s", yylineno, buf);
+    printf("| %s",s);
     printf("\n|-----------------------------------------------|\n\n");
 
-    
     return;
 }
 

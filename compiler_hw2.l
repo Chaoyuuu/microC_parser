@@ -120,7 +120,10 @@ id			{letter}+({letter}|{digit})*
 
 [;]         { ECHO; CONCAT; return(SEMICOLON); }
 [\n]        { ECHO; CONCAT; line_num++; 
-              if(error_flag != 0){
+              if(error_flag == 3){
+                    yyerror( "syntax error");
+                    yyterminate();
+              }else if(error_flag != 0){
                   print_semantic_error();
               }
               memset(buf, 0, BUF_SIZE);
