@@ -7,6 +7,7 @@
 
 extern YYSTYPE yylval; //YYSTYPE
 extern void yyerror(char *s);
+extern void dump_symbol();
 
 char buf[BUF_SIZE];
 char error_msg[BUF_SIZE];
@@ -18,6 +19,7 @@ char syntax_buf[BUF_SIZE];
 int line_num = 1;
 int error_flag = 0;
 int syntax_flag = 0;
+int dump_flag = 0;
 
 %}
 
@@ -108,8 +110,10 @@ id			{letter}+({letter}|{digit})*
  /* C type Comment */
 "/*"				{ CONCAT; BEGIN COMMENT; }
 <COMMENT>[^*\n]+	{ CONCAT; }
-<COMMENT>\n			{ CONCAT; 
-                      printf("%d: %s", line_num, buf); 
+<COMMENT>\n			{  
+                      printf("%d:", line_num);
+                      printf(" %s", buf); 
+                    printf("\n"); 
                       line_num++; 
                       memset(buf, 0, BUF_SIZE);
                     }
@@ -125,7 +129,7 @@ id			{letter}+({letter}|{digit})*
  /* others */
 
 [;]         { CONCAT; return(SEMICOLON); }
-[\n]        { CONCAT;     
+[\n]        {      
                 if(error_flag != 0){
                     yyerror(error_msg);
                     error_flag = 0;
@@ -136,14 +140,23 @@ id			{letter}+({letter}|{digit})*
                     yyterminate();
                 } 
 
-                printf("%d: %s", line_num, buf); 
+                printf("%d:", line_num);
+                if(strlen(buf) != 0)
+                    printf(" %s", buf); 
+                printf("\n");
                 line_num++; 
+
+                if(dump_flag == 1){
+                    dump_symbol();
+                    dump_flag = 0;
+                }
                 memset(buf, 0, BUF_SIZE);
-            
+
             }
 [ \t]		{ CONCAT; } /* Ignore */
 [^ \t\n] 	{ CONCAT; } /* Ignore other charactor sets */
-<<EOF>>     { yyterminate();}
+<<EOF>>     { 
+                yyterminate();}
 
 %%
 

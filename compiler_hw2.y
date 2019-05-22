@@ -33,6 +33,7 @@ struct Table{
 
 struct Table *table_header = NULL;
 struct Table *table_current = NULL;
+struct Table *table_dump = NULL;
 
 extern int yylineno;
 extern int yylex();
@@ -42,7 +43,9 @@ extern char syntax_buf[256];
 extern int error_flag; //1.redefined 2.undefined
 extern int syntax_flag;
 extern char error_msg[256];
+extern int dump_flag;
 extern void yyerror(char *s);
+
 
 /* Symbol table function - you can add new function if needed. */
 void get_attribute();
@@ -51,6 +54,7 @@ void lookup_symbol();
 void lookup_function();
 void insert_symbol();
 void dump_symbol();
+void dump_table();
 
 %}
 
@@ -125,7 +129,7 @@ compound_stat
     : 
     '{'     { /* create_symbol(); */} 
     program 
-    '}'     { dump_symbol(); }
+    '}'     { dump_table(); /* dump_symbol();*/   dump_flag = 1;}
 ;
 
 expression_stat
@@ -307,6 +311,7 @@ int main(int argc, char** argv)
         return 0;
     } 
     
+    dump_table();
     dump_symbol();
     printf("\nTotal lines: %d \n",yylineno);
 
@@ -457,30 +462,34 @@ void lookup_function(char *name){
     error_flag = 1;
     
 }
-
+void dump_table(){
+    table_dump = table_current;
+    table_current = table_current->pre;
+    table_depth --;
+}
 void dump_symbol() {
-    // printf("\n----in dump_symbol");
-
-    struct Table *ptr = table_current;
+    // printf("\n----in dump_symbol\n");
+    struct Table *ptr = table_dump;
+    
     if(ptr->entry_header == NULL){ 
         //not entry, print nothing and drop the table
         // printf(", depth = %d, current = %p----\n", ptr->table_depth, ptr);
     }else{
         //print symbol_table && delete it
-        printf("\n\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
+        printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
             "Index", "Name", "Kind", "Type", "Scope", "Attribute");
         
         struct Entry *e_ptr = ptr->entry_header;
         while(e_ptr != NULL){
-            printf("%-10d%-10s%-12s%-10s%-10d%-10s\n",
-            e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope, e_ptr->attribute);
-
+            printf("%-10d%-10s%-12s%-10s%-10d",
+            e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
+            if(strlen(e_ptr->attribute) != 0)
+                printf("%s", e_ptr->attribute);
+            
+            printf("\n");
             e_ptr = e_ptr->entry_next;
         }
+        printf("\n");
     
     }
-
-    table_current = ptr->pre;
-    table_depth --;
 }
-
