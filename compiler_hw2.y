@@ -112,9 +112,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { /* lookup_symbol($2, 1); */ insert_symbol($1, $2, type_v);}
+        { lookup_symbol($2, 1);  insert_symbol($1, $2, type_v);}
     | type ID SEMICOLON 
-        { /* lookup_symbol($2, 1); */ insert_symbol($1, $2, type_v);}
+        { lookup_symbol($2, 1);  insert_symbol($1, $2, type_v);}
 ;
 
 print_func
@@ -129,21 +129,20 @@ compound_stat
 ;
 
 expression_stat
-    : selection_statement compound_stat 
+    : selection_statement 
     | while_statement 
     | expression SEMICOLON
     | return_statement 
 ;
 
 selection_statement
-    : error ')'
-    | IF { create_symbol(); }
-      '(' expression ')' 
+    : IF { create_symbol(); }
+      '(' expression ')' compound_stat
     | selection_statement 
-      ELSE { create_symbol(); } 
+      ELSE { create_symbol(); } compound_stat
     | selection_statement
       IF ELSE { create_symbol(); }
-      '(' expression ')' 
+      '(' expression ')' compound_stat
 ;
 
 while_statement
@@ -240,7 +239,7 @@ function_declaration
     : type ID { create_symbol(); }
       declarator compound_stat 
       { insert_symbol($1, $2, type_f); }
-    | ID  { lookup_function($1); }
+    | ID   { lookup_function($1); }
       declarator2 SEMICOLON 
 ;
 
@@ -262,7 +261,7 @@ declarator2
 ;
 
 identifier_list2
-    : identifier_list2 ',' initializer 
+    : identifier_list2 ',' expression 
     | expression
 ;
 
@@ -298,7 +297,6 @@ int main(int argc, char** argv)
     table_header = table_current;
     */
 
-    printf("1: ");  
     yyparse();
     if(syntax_flag != 0){
         // print syntax error msg
@@ -397,7 +395,7 @@ void get_attribute(char *t){
 }
 
 void lookup_symbol(char* name, int flag) {
-    //printf("\nin lookup_symbol\n");
+    // printf("\nin lookup_symbol\n");
     //check semetic_error 
 
     if(flag == 1){  //check if Redeclared variable

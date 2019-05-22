@@ -36,93 +36,96 @@ id			{letter}+({letter}|{digit})*
 %%
 
  /* Arithmetic */
-"+"     { ECHO; CONCAT; return('+'); }
-"-" 	{ ECHO; CONCAT; return('-'); }
-"*" 	{ ECHO; CONCAT; return('*'); }
-"/" 	{ ECHO; CONCAT; return('/'); }
-"%"     { ECHO; CONCAT; return('%'); }
-"++"    { ECHO; CONCAT; return(INC_OP); }
-"--"    { ECHO; CONCAT; return(DEC_OP); }
+"+"     { CONCAT; return('+'); }
+"-" 	{ CONCAT; return('-'); }
+"*" 	{ CONCAT; return('*'); }
+"/" 	{ CONCAT; return('/'); }
+"%"     { CONCAT; return('%'); }
+"++"    { CONCAT; return(INC_OP); }
+"--"    { CONCAT; return(DEC_OP); }
 
  /* Relational */
-">"		{ ECHO; CONCAT; return('>'); }
-"<"		{ ECHO; CONCAT; return('<'); }
-">="	{ ECHO; CONCAT; return(GE_OP); }
-"<="	{ ECHO; CONCAT; return(LE_OP); }
-"=="	{ ECHO; CONCAT; return(EQ_OP); }
-"!="	{ ECHO; CONCAT; return(NE_OP); }
+">"		{ CONCAT; return('>'); }
+"<"		{ CONCAT; return('<'); }
+">="	{ CONCAT; return(GE_OP); }
+"<="	{ CONCAT; return(LE_OP); }
+"=="	{ CONCAT; return(EQ_OP); }
+"!="	{ CONCAT; return(NE_OP); }
 
  /* Assignment */
-"="		{ ECHO; CONCAT; return('='); }
-"+="	{ ECHO; CONCAT; return(ADD_ASSIGN); }
-"-="	{ ECHO; CONCAT; return(SUB_ASSIGN); }
-"*="	{ ECHO; CONCAT; return(MUL_ASSIGN); }
-"/="	{ ECHO; CONCAT; return(DIV_ASSIGN); }
-"%="	{ ECHO; CONCAT; return(MOD_ASSIGN); }
+"="		{ CONCAT; return('='); }
+"+="	{ CONCAT; return(ADD_ASSIGN); }
+"-="	{ CONCAT; return(SUB_ASSIGN); }
+"*="	{ CONCAT; return(MUL_ASSIGN); }
+"/="	{ CONCAT; return(DIV_ASSIGN); }
+"%="	{ CONCAT; return(MOD_ASSIGN); }
 
  /* Logical */
-"&&"	{ ECHO; CONCAT; return(AND_OP); }
-"||"	{ ECHO; CONCAT; return(OR_OP); }
-"!"		{ ECHO; CONCAT; return('!'); }
+"&&"	{ CONCAT; return(AND_OP); }
+"||"	{ CONCAT; return(OR_OP); }
+"!"		{ CONCAT; return('!'); }
 
  /* Delimiters */
-"("		{ ECHO; CONCAT; return('('); }
-")"		{ ECHO; CONCAT; return(')'); }
-"{"		{ ECHO; CONCAT; return('{'); }
-"}"		{ ECHO; CONCAT; return('}'); }
-"["		{ ECHO; CONCAT; return('['); }
-"]"		{ ECHO; CONCAT; return(']'); }
-","		{ ECHO; CONCAT; return(','); }
+"("		{ CONCAT; return('('); }
+")"		{ CONCAT; return(')'); }
+"{"		{ CONCAT; return('{'); }
+"}"		{ CONCAT; return('}'); }
+"["		{ CONCAT; return('['); }
+"]"		{ CONCAT; return(']'); }
+","		{ CONCAT; return(','); }
 
  /* Print Keywords */	
-"print"		{ ECHO; CONCAT; return(PRINT);  }
+"print"		{ CONCAT; return(PRINT);  }
 
  /* Condition and Loop Keywords */
-"if"		{ ECHO; CONCAT; return(IF); }
-"else"		{ ECHO; CONCAT; return(ELSE); }
-"for"		{ ECHO; CONCAT; return(FOR); }
-"while"		{ ECHO; CONCAT; return(WHILE); }
+"if"		{ CONCAT; return(IF); }
+"else"		{ CONCAT; return(ELSE); }
+"for"		{ CONCAT; return(FOR); }
+"while"		{ CONCAT; return(WHILE); }
 
  /* Declaration Keywords */
-"void"		{ ECHO; CONCAT; yylval.symbol_type = "void"; return(VOID); }
-"int"		{ ECHO; CONCAT; yylval.symbol_type = "int"; return(INT);}
-"float"  	{ ECHO; CONCAT; yylval.symbol_type = "float"; return(FLOAT);}
-"string"  	{ ECHO; CONCAT; yylval.symbol_type = "string"; return(STRING);}
-"bool"  	{ ECHO; CONCAT; yylval.symbol_type = "bool"; return(BOOL);}
+"void"		{ CONCAT; yylval.symbol_type = "void"; return(VOID); }
+"int"		{ CONCAT; yylval.symbol_type = "int"; return(INT);}
+"float"  	{ CONCAT; yylval.symbol_type = "float"; return(FLOAT);}
+"string"  	{ CONCAT; yylval.symbol_type = "string"; return(STRING);}
+"bool"  	{ CONCAT; yylval.symbol_type = "bool"; return(BOOL);}
 
  /* boolean Keywords */
-"true"      { ECHO; CONCAT; return(TRUE); }
-"false"     { ECHO; CONCAT; return(FALSE); }
+"true"      { CONCAT; return(TRUE); }
+"false"     { CONCAT; return(FALSE); }
 
-"return"    { ECHO; CONCAT; return(RETURN); }
+"return"    { CONCAT; return(RETURN); }
 
  /* String Constant */
-\"				        { ECHO; CONCAT; BEGIN STRING_STATE; return(QUOTA);}
-<STRING_STATE>\"		{ ECHO; CONCAT; BEGIN INITIAL; return(QUOTA);}
-<STRING_STATE>[^"]*		{ ECHO; CONCAT; return(STRING_CONST);}
+\"				        { CONCAT; BEGIN STRING_STATE; return(QUOTA);}
+<STRING_STATE>\"		{ CONCAT; BEGIN INITIAL; return(QUOTA);}
+<STRING_STATE>[^"]*		{ CONCAT; return(STRING_CONST);}
 
  /* Number Constant */
-{integer}	{ ECHO; CONCAT; yylval.i_val = atoi(yytext); return(I_CONST); }
-{float}	    { ECHO; CONCAT; return(F_CONST); }
+{integer}	{ CONCAT; yylval.i_val = atoi(yytext); return(I_CONST); }
+{float}	    { CONCAT; return(F_CONST); }
 
  /* C type Comment */
-"/*"				{ ECHO; CONCAT; BEGIN COMMENT; }
-<COMMENT>[^*\n]+	{ ECHO; CONCAT; }
-<COMMENT>\n			{ ECHO; CONCAT; line_num++; printf("%d: ", line_num);}
-<COMMENT>"*"		{ ECHO; CONCAT;  }
-<COMMENT>"*/"		{ ECHO; CONCAT; BEGIN INITIAL; }
+"/*"				{ CONCAT; BEGIN COMMENT; }
+<COMMENT>[^*\n]+	{ CONCAT; }
+<COMMENT>\n			{ CONCAT; 
+                      printf("%d: %s", line_num, buf); 
+                      line_num++; 
+                      memset(buf, 0, BUF_SIZE);
+                    }
+<COMMENT>"*"		{ CONCAT;  }
+<COMMENT>"*/"		{ CONCAT; BEGIN INITIAL; }
 
  /* C++ type Comment */
-\/\/.*	{ ECHO; CONCAT; }
+\/\/.*	{ CONCAT; }
 
  /* Variable ID */
- {id}       { ECHO; CONCAT; yylval.symbol_name = strdup(yytext); return(ID); }
+ {id}       { CONCAT; yylval.symbol_name = strdup(yytext); return(ID); }
 
  /* others */
 
-[;]         { ECHO; CONCAT; return(SEMICOLON); }
-[\n]        { ECHO; CONCAT; line_num++; 
-    
+[;]         { CONCAT; return(SEMICOLON); }
+[\n]        { CONCAT;     
                 if(error_flag != 0){
                     yyerror(error_msg);
                     error_flag = 0;
@@ -132,12 +135,15 @@ id			{letter}+({letter}|{digit})*
                 if(syntax_flag != 0){
                     yyterminate();
                 } 
-              memset(buf, 0, BUF_SIZE);
-              printf("%d: ", line_num); 
+
+                printf("%d: %s", line_num, buf); 
+                line_num++; 
+                memset(buf, 0, BUF_SIZE);
+            
             }
-[ \t]		{ ECHO; CONCAT; } /* Ignore */
-[^ \t\n] 	{ ECHO; CONCAT; } /* Ignore other charactor sets */
-<<EOF>>     { ECHO; CONCAT;  yyterminate();}
+[ \t]		{ CONCAT; } /* Ignore */
+[^ \t\n] 	{ CONCAT; } /* Ignore other charactor sets */
+<<EOF>>     { yyterminate();}
 
 %%
 
