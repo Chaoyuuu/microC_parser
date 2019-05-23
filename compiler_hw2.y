@@ -119,9 +119,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { lookup_symbol($2, 1);  if(error_flag != 1) insert_symbol($1, $2, type_v);}
+        { /* lookup_symbol($2, 1); */ if(error_flag != 1) insert_symbol($1, $2, type_v); }
     | type ID SEMICOLON 
-        { lookup_symbol($2, 1);  if(error_flag != 1) insert_symbol($1, $2, type_v);}
+        { /* lookup_symbol($2, 1);  */ if(error_flag != 1) insert_symbol($1, $2, type_v); }
 ;
 
 print_func
@@ -130,7 +130,7 @@ print_func
 
 compound_stat
     : 
-    '{'     { /* create_symbol(); */} 
+    '{'      
     program 
     '}'     { dump_table(); dump_flag = 1;}
 ;
@@ -154,7 +154,7 @@ selection_statement
 
 while_statement
     : WHILE 
-        { create_symbol(); }
+     { create_symbol(); }
     '(' expression ')' compound_stat 
 ;
 
@@ -191,6 +191,8 @@ postfix_expr
 
 parenthesis_expr
     : initializer
+    | ID { lookup_function($1, 1); }
+      declarator2
     | '(' expression ')'
 ;
 
@@ -243,23 +245,27 @@ return_statement
 ;
 
 function_declaration
-   : type ID { create_symbol(); }
-      declarator compound_stat 
-      { insert_symbol($1, $2, type_f); }
-    | ID   { lookup_function($1); }
-      declarator2 SEMICOLON 
+    : type ID { lookup_function($2, 2); create_symbol(); }
+      declarator function_tmp
+      { if(error_flag != 1) insert_symbol($1, $2, type_f); }
 ;
 
+function_tmp
+    : compound_stat
+    | SEMICOLON { dump_table(); }
+;
+
+
 declarator
-    : '(' identifier_list ')' 
-    | '(' ')' 
+    : '(' identifier_list ')'  
+    | '(' ')'
 ;
 
 identifier_list
     : identifier_list ',' type ID 
-        { insert_symbol($3, $4, type_p);}
+        { insert_symbol($3, $4, type_p); }
     | type ID
-        { insert_symbol($1, $2, type_p);}
+        { insert_symbol($1, $2, type_p); }
 ;
 
 declarator2
@@ -278,7 +284,7 @@ initializer
     | QUOTA STRING_CONST QUOTA
     | TRUE
     | FALSE
-    | ID { lookup_symbol($1); }
+    | ID { /* lookup_symbol($1); */}
 ;
 
 neg_const
@@ -289,9 +295,9 @@ neg_const
 /* actions can be taken when meet the token or rule */
 /* $$ = yylval.val; */
 type
-    : INT { /* $$ = yylval.symbol_type; printf("$$ = %s", $$); */}
+    : INT {}
     | FLOAT {}
-    | BOOL  { /* $$ = yylval.symbol_type; */}
+    | BOOL  {}
     | STRING {}
     | VOID {}
 ;
@@ -304,12 +310,8 @@ int main(int argc, char** argv)
     yylineno = 0;
 
     create_symbol();
-    /*
-    table_current = create_symbol();  //global symbol_table
-    table_header = table_current;
-    */
-
     yyparse();
+
     if(syntax_flag != 0){
         // print syntax error msg
         printf("\n|-----------------------------------------------|\n");
@@ -461,31 +463,49 @@ void lookup_symbol(char* name, int flag) {
     }
 }
 
-void lookup_function(char *name){
+void lookup_function(char *name, int flag){
     // printf("\nin lookup_function\n");
+
     struct Table * ptr = table_current;
 
-    while(ptr != NULL){
+    if(flag == 1){   //Undeclared function
+        while(ptr != NULL){
+            struct Entry * e_ptr = ptr->entry_header;
+            while(e_ptr != NULL){
+                if(strcmp(e_ptr->kind, "function") == 0 && strcmp(e_ptr->name, name)== 0 ){
+                    // printf("function declared !!!");
+                    return;
+                }
+                e_ptr = e_ptr->entry_next;
+            }
+            ptr = ptr->pre;
+        }
+
+        // printf("\nno declared\n");
+        // printf("num = %d, buf = %s\n", yylineno, buf);
+        memset(error_msg, 0, sizeof(error_msg));
+        strcat(error_msg, "Undeclared function ");
+        strcat(error_msg, name);
+        error_flag = 1;
+    }else{   //redeclared function
         struct Entry * e_ptr = ptr->entry_header;
         while(e_ptr != NULL){
-            if(strcmp(e_ptr->kind, "function") == 0 && strcmp(e_ptr->name, name)== 0 ){
-                // printf("function declared !!!");
+            if(strcmp(e_ptr->kind, "function") == 0 && strcmp(e_ptr->name, name)== 0){
+                // redeclared
+                memset(error_msg, 0, sizeof(error_msg));
+                strcat(error_msg, "Redeclared function ");
+                strcat(error_msg, name);
+                error_flag = 1;
                 return;
             }
             e_ptr = e_ptr->entry_next;
-        }
-        ptr = ptr->pre;
-    }
+        }    
 
-    // printf("\nno declared\n");
-    // printf("num = %d, buf = %s\n", yylineno, buf);
-    memset(error_msg, 0, sizeof(error_msg));
-    strcat(error_msg, "Undeclared function ");
-    strcat(error_msg, name);
-    error_flag = 1;
+    }
 
 }
 void dump_table(){
+    // printf("\n----in dump_table, depth = %d, current = %p----\n", table_current->table_depth, table_current);
     table_dump = table_current;
     table_current = table_current->pre;
     table_depth --;

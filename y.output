@@ -25,172 +25,173 @@ Grammar
 
    11 print_func: PRINT '(' initializer ')' SEMICOLON
 
-   12 $@1: %empty
+   12 compound_stat: '{' program '}'
 
-   13 compound_stat: '{' $@1 program '}'
+   13 expression_stat: selection_statement
+   14                | while_statement
+   15                | expression SEMICOLON
+   16                | return_statement
 
-   14 expression_stat: selection_statement
-   15                | while_statement
-   16                | expression SEMICOLON
-   17                | return_statement
+   17 $@1: %empty
 
-   18 $@2: %empty
+   18 selection_statement: IF $@1 '(' expression ')' compound_stat
 
-   19 selection_statement: IF $@2 '(' expression ')' compound_stat
+   19 $@2: %empty
 
-   20 $@3: %empty
+   20 selection_statement: selection_statement ELSE $@2 compound_stat
 
-   21 selection_statement: selection_statement ELSE $@3 compound_stat
+   21 $@3: %empty
 
-   22 $@4: %empty
+   22 selection_statement: selection_statement ELSE IF $@3 '(' expression ')' compound_stat
 
-   23 selection_statement: selection_statement ELSE IF $@4 '(' expression ')' compound_stat
+   23 $@4: %empty
 
-   24 $@5: %empty
+   24 while_statement: WHILE $@4 '(' expression ')' compound_stat
 
-   25 while_statement: WHILE $@5 '(' expression ')' compound_stat
+   25 expression: logic_expr
+   26           | assign_expression
 
-   26 expression: logic_expr
-   27           | assign_expression
+   27 logic_expr: comparison_expr
+   28           | logic_expr logic_op comparison_expr
 
-   28 logic_expr: comparison_expr
-   29           | logic_expr logic_op comparison_expr
+   29 comparison_expr: add_expr
+   30                | comparison_expr relation_op add_expr
 
-   30 comparison_expr: add_expr
-   31                | comparison_expr relation_op add_expr
+   31 add_expr: mul_expr
+   32         | add_expr addition_op mul_expr
 
-   32 add_expr: mul_expr
-   33         | add_expr addition_op mul_expr
+   33 mul_expr: postfix_expr
+   34         | mul_expr mul_op postfix_expr
 
-   34 mul_expr: postfix_expr
-   35         | mul_expr mul_op postfix_expr
+   35 postfix_expr: parenthesis_expr
+   36             | parenthesis_expr postfix_op
 
-   36 postfix_expr: parenthesis_expr
-   37             | parenthesis_expr postfix_op
+   37 parenthesis_expr: initializer
 
-   38 parenthesis_expr: initializer
-   39                 | '(' expression ')'
+   38 $@5: %empty
 
-   40 postfix_op: INC_OP
-   41           | DEC_OP
+   39 parenthesis_expr: ID $@5 declarator2
+   40                 | '(' expression ')'
 
-   42 mul_op: '*'
-   43       | '/'
-   44       | '%'
+   41 postfix_op: INC_OP
+   42           | DEC_OP
 
-   45 relation_op: '>'
-   46            | '<'
-   47            | GE_OP
-   48            | LE_OP
-   49            | EQ_OP
-   50            | NE_OP
+   43 mul_op: '*'
+   44       | '/'
+   45       | '%'
 
-   51 addition_op: '+'
-   52            | '-'
+   46 relation_op: '>'
+   47            | '<'
+   48            | GE_OP
+   49            | LE_OP
+   50            | EQ_OP
+   51            | NE_OP
 
-   53 logic_op: AND_OP
-   54         | OR_OP
-   55         | '!'
+   52 addition_op: '+'
+   53            | '-'
 
-   56 assign_expression: expression assign_op expression
+   54 logic_op: AND_OP
+   55         | OR_OP
+   56         | '!'
 
-   57 assign_op: ADD_ASSIGN
-   58          | SUB_ASSIGN
-   59          | MUL_ASSIGN
-   60          | DIV_ASSIGN
-   61          | MOD_ASSIGN
-   62          | '='
+   57 assign_expression: expression assign_op expression
 
-   63 return_statement: RETURN expression SEMICOLON
-   64                 | RETURN SEMICOLON
+   58 assign_op: ADD_ASSIGN
+   59          | SUB_ASSIGN
+   60          | MUL_ASSIGN
+   61          | DIV_ASSIGN
+   62          | MOD_ASSIGN
+   63          | '='
 
-   65 $@6: %empty
+   64 return_statement: RETURN expression SEMICOLON
+   65                 | RETURN SEMICOLON
 
-   66 function_declaration: type ID $@6 declarator compound_stat
+   66 $@6: %empty
 
-   67 $@7: %empty
+   67 function_declaration: type ID $@6 declarator function_tmp
 
-   68 function_declaration: ID $@7 declarator2 SEMICOLON
+   68 function_tmp: compound_stat
+   69             | SEMICOLON
 
-   69 declarator: '(' identifier_list ')'
-   70           | '(' ')'
+   70 declarator: '(' identifier_list ')'
+   71           | '(' ')'
 
-   71 identifier_list: identifier_list ',' type ID
-   72                | type ID
+   72 identifier_list: identifier_list ',' type ID
+   73                | type ID
 
-   73 declarator2: '(' identifier_list2 ')'
-   74            | '(' ')'
+   74 declarator2: '(' identifier_list2 ')'
+   75            | '(' ')'
 
-   75 identifier_list2: identifier_list2 ',' expression
-   76                 | expression
+   76 identifier_list2: identifier_list2 ',' expression
+   77                 | expression
 
-   77 initializer: neg_const I_CONST
-   78            | neg_const F_CONST
-   79            | QUOTA STRING_CONST QUOTA
-   80            | TRUE
-   81            | FALSE
-   82            | ID
+   78 initializer: neg_const I_CONST
+   79            | neg_const F_CONST
+   80            | QUOTA STRING_CONST QUOTA
+   81            | TRUE
+   82            | FALSE
+   83            | ID
 
-   83 neg_const: '-'
-   84          | %empty
+   84 neg_const: '-'
+   85          | %empty
 
-   85 type: INT
-   86     | FLOAT
-   87     | BOOL
-   88     | STRING
-   89     | VOID
+   86 type: INT
+   87     | FLOAT
+   88     | BOOL
+   89     | STRING
+   90     | VOID
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'!' (33) 55
-'%' (37) 44
-'(' (40) 11 19 23 25 39 69 70 73 74
-')' (41) 11 19 23 25 39 69 70 73 74
-'*' (42) 42
-'+' (43) 51
-',' (44) 71 75
-'-' (45) 52 83
-'/' (47) 43
-'<' (60) 46
-'=' (61) 9 62
-'>' (62) 45
-'{' (123) 13
-'}' (125) 13
+'!' (33) 56
+'%' (37) 45
+'(' (40) 11 18 22 24 40 70 71 74 75
+')' (41) 11 18 22 24 40 70 71 74 75
+'*' (42) 43
+'+' (43) 52
+',' (44) 72 76
+'-' (45) 53 84
+'/' (47) 44
+'<' (60) 47
+'=' (61) 9 63
+'>' (62) 46
+'{' (123) 12
+'}' (125) 12
 error (256) 2
-BOOL (258) 87
-FLOAT (259) 86
-INT (260) 85
-VOID (261) 89
-STRING (262) 88
-INC_OP (263) 40
-DEC_OP (264) 41
-GE_OP (265) 47
-LE_OP (266) 48
-EQ_OP (267) 49
-NE_OP (268) 50
-AND_OP (269) 53
-OR_OP (270) 54
-ADD_ASSIGN (271) 57
-SUB_ASSIGN (272) 58
-MUL_ASSIGN (273) 59
-DIV_ASSIGN (274) 60
-MOD_ASSIGN (275) 61
-TRUE (276) 80
-FALSE (277) 81
-RETURN (278) 63 64
+BOOL (258) 88
+FLOAT (259) 87
+INT (260) 86
+VOID (261) 90
+STRING (262) 89
+INC_OP (263) 41
+DEC_OP (264) 42
+GE_OP (265) 48
+LE_OP (266) 49
+EQ_OP (267) 50
+NE_OP (268) 51
+AND_OP (269) 54
+OR_OP (270) 55
+ADD_ASSIGN (271) 58
+SUB_ASSIGN (272) 59
+MUL_ASSIGN (273) 60
+DIV_ASSIGN (274) 61
+MOD_ASSIGN (275) 62
+TRUE (276) 81
+FALSE (277) 82
+RETURN (278) 64 65
 PRINT (279) 11
-IF (280) 19 23
-ELSE (281) 21 23
+IF (280) 18 22
+ELSE (281) 20 22
 FOR (282)
-WHILE (283) 25
-SEMICOLON (284) 9 10 11 16 63 64 68
-QUOTA (285) 79
-ID (286) 9 10 66 68 71 72 82
-I_CONST (287) 77
-F_CONST (288) 78
-STRING_CONST (289) 79
+WHILE (283) 24
+SEMICOLON (284) 9 10 11 15 64 65 69
+QUOTA (285) 80
+ID (286) 9 10 39 67 72 73 83
+I_CONST (287) 78
+F_CONST (288) 79
+STRING_CONST (289) 80
 
 
 Nonterminals, with rules where they appear
@@ -198,7 +199,7 @@ Nonterminals, with rules where they appear
 $accept (49)
     on left: 0
 program (50)
-    on left: 1 2 3, on right: 0 1 13
+    on left: 1 2 3, on right: 0 1 12
 stat (51)
     on left: 4 5 6 7 8, on right: 1
 declaration (52)
@@ -206,73 +207,73 @@ declaration (52)
 print_func (53)
     on left: 11, on right: 7
 compound_stat (54)
-    on left: 13, on right: 5 19 21 23 25 66
-$@1 (55)
-    on left: 12, on right: 13
-expression_stat (56)
-    on left: 14 15 16 17, on right: 6
-selection_statement (57)
-    on left: 19 21 23, on right: 14 21 23
+    on left: 12, on right: 5 18 20 22 24 68
+expression_stat (55)
+    on left: 13 14 15 16, on right: 6
+selection_statement (56)
+    on left: 18 20 22, on right: 13 20 22
+$@1 (57)
+    on left: 17, on right: 18
 $@2 (58)
-    on left: 18, on right: 19
+    on left: 19, on right: 20
 $@3 (59)
-    on left: 20, on right: 21
-$@4 (60)
-    on left: 22, on right: 23
-while_statement (61)
-    on left: 25, on right: 15
-$@5 (62)
-    on left: 24, on right: 25
-expression (63)
-    on left: 26 27, on right: 9 16 19 23 25 39 56 63 75 76
-logic_expr (64)
-    on left: 28 29, on right: 26 29
-comparison_expr (65)
-    on left: 30 31, on right: 28 29 31
-add_expr (66)
-    on left: 32 33, on right: 30 31 33
-mul_expr (67)
-    on left: 34 35, on right: 32 33 35
-postfix_expr (68)
-    on left: 36 37, on right: 34 35
-parenthesis_expr (69)
-    on left: 38 39, on right: 36 37
+    on left: 21, on right: 22
+while_statement (60)
+    on left: 24, on right: 14
+$@4 (61)
+    on left: 23, on right: 24
+expression (62)
+    on left: 25 26, on right: 9 15 18 22 24 40 57 64 76 77
+logic_expr (63)
+    on left: 27 28, on right: 25 28
+comparison_expr (64)
+    on left: 29 30, on right: 27 28 30
+add_expr (65)
+    on left: 31 32, on right: 29 30 32
+mul_expr (66)
+    on left: 33 34, on right: 31 32 34
+postfix_expr (67)
+    on left: 35 36, on right: 33 34
+parenthesis_expr (68)
+    on left: 37 39 40, on right: 35 36
+$@5 (69)
+    on left: 38, on right: 39
 postfix_op (70)
-    on left: 40 41, on right: 37
+    on left: 41 42, on right: 36
 mul_op (71)
-    on left: 42 43 44, on right: 35
+    on left: 43 44 45, on right: 34
 relation_op (72)
-    on left: 45 46 47 48 49 50, on right: 31
+    on left: 46 47 48 49 50 51, on right: 30
 addition_op (73)
-    on left: 51 52, on right: 33
+    on left: 52 53, on right: 32
 logic_op (74)
-    on left: 53 54 55, on right: 29
+    on left: 54 55 56, on right: 28
 assign_expression (75)
-    on left: 56, on right: 27
+    on left: 57, on right: 26
 assign_op (76)
-    on left: 57 58 59 60 61 62, on right: 56
+    on left: 58 59 60 61 62 63, on right: 57
 return_statement (77)
-    on left: 63 64, on right: 17
+    on left: 64 65, on right: 16
 function_declaration (78)
-    on left: 66 68, on right: 8
+    on left: 67, on right: 8
 $@6 (79)
-    on left: 65, on right: 66
-$@7 (80)
-    on left: 67, on right: 68
+    on left: 66, on right: 67
+function_tmp (80)
+    on left: 68 69, on right: 67
 declarator (81)
-    on left: 69 70, on right: 66
+    on left: 70 71, on right: 67
 identifier_list (82)
-    on left: 71 72, on right: 69 71
+    on left: 72 73, on right: 70 72
 declarator2 (83)
-    on left: 73 74, on right: 68
+    on left: 74 75, on right: 39
 identifier_list2 (84)
-    on left: 75 76, on right: 73 75
+    on left: 76 77, on right: 74 76
 initializer (85)
-    on left: 77 78 79 80 81 82, on right: 11 38
+    on left: 78 79 80 81 82 83, on right: 11 37
 neg_const (86)
-    on left: 83 84, on right: 77 78
+    on left: 84 85, on right: 78 79
 type (87)
-    on left: 85 86 87 88 89, on right: 9 10 66 71 72
+    on left: 86 87 88 89 90, on right: 9 10 67 72 73
 
 
 State 0
@@ -334,7 +335,7 @@ State 2
     '{'     shift, and go to state 18
     '-'     shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
     stat                  go to state 20
     declaration           go to state 21
@@ -367,69 +368,69 @@ State 3
 
 State 4
 
-   87 type: BOOL .
-
-    $default  reduce using rule 87 (type)
-
-
-State 5
-
-   86 type: FLOAT .
-
-    $default  reduce using rule 86 (type)
-
-
-State 6
-
-   85 type: INT .
-
-    $default  reduce using rule 85 (type)
-
-
-State 7
-
-   89 type: VOID .
-
-    $default  reduce using rule 89 (type)
-
-
-State 8
-
-   88 type: STRING .
+   88 type: BOOL .
 
     $default  reduce using rule 88 (type)
 
 
+State 5
+
+   87 type: FLOAT .
+
+    $default  reduce using rule 87 (type)
+
+
+State 6
+
+   86 type: INT .
+
+    $default  reduce using rule 86 (type)
+
+
+State 7
+
+   90 type: VOID .
+
+    $default  reduce using rule 90 (type)
+
+
+State 8
+
+   89 type: STRING .
+
+    $default  reduce using rule 89 (type)
+
+
 State 9
 
-   80 initializer: TRUE .
-
-    $default  reduce using rule 80 (initializer)
-
-
-State 10
-
-   81 initializer: FALSE .
+   81 initializer: TRUE .
 
     $default  reduce using rule 81 (initializer)
 
 
+State 10
+
+   82 initializer: FALSE .
+
+    $default  reduce using rule 82 (initializer)
+
+
 State 11
 
-   63 return_statement: RETURN . expression SEMICOLON
-   64                 | RETURN . SEMICOLON
+   64 return_statement: RETURN . expression SEMICOLON
+   65                 | RETURN . SEMICOLON
 
     TRUE       shift, and go to state 9
     FALSE      shift, and go to state 10
     SEMICOLON  shift, and go to state 40
     QUOTA      shift, and go to state 15
-    ID         shift, and go to state 41
+    ID         shift, and go to state 16
     '('        shift, and go to state 17
     '-'        shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
-    expression         go to state 42
+    expression         go to state 41
     logic_expr         go to state 28
     comparison_expr    go to state 29
     add_expr           go to state 30
@@ -445,59 +446,59 @@ State 12
 
    11 print_func: PRINT . '(' initializer ')' SEMICOLON
 
-    '('  shift, and go to state 43
+    '('  shift, and go to state 42
 
 
 State 13
 
-   19 selection_statement: IF . $@2 '(' expression ')' compound_stat
+   18 selection_statement: IF . $@1 '(' expression ')' compound_stat
 
-    $default  reduce using rule 18 ($@2)
+    $default  reduce using rule 17 ($@1)
 
-    $@2  go to state 44
+    $@1  go to state 43
 
 
 State 14
 
-   25 while_statement: WHILE . $@5 '(' expression ')' compound_stat
+   24 while_statement: WHILE . $@4 '(' expression ')' compound_stat
 
-    $default  reduce using rule 24 ($@5)
+    $default  reduce using rule 23 ($@4)
 
-    $@5  go to state 45
+    $@4  go to state 44
 
 
 State 15
 
-   79 initializer: QUOTA . STRING_CONST QUOTA
+   80 initializer: QUOTA . STRING_CONST QUOTA
 
-    STRING_CONST  shift, and go to state 46
+    STRING_CONST  shift, and go to state 45
 
 
 State 16
 
-   68 function_declaration: ID . $@7 declarator2 SEMICOLON
-   82 initializer: ID .
+   39 parenthesis_expr: ID . $@5 declarator2
+   83 initializer: ID .
 
-    '('       reduce using rule 67 ($@7)
-    $default  reduce using rule 82 (initializer)
+    '('       reduce using rule 38 ($@5)
+    $default  reduce using rule 83 (initializer)
 
-    $@7  go to state 47
+    $@5  go to state 46
 
 
 State 17
 
-   39 parenthesis_expr: '(' . expression ')'
+   40 parenthesis_expr: '(' . expression ')'
 
     TRUE   shift, and go to state 9
     FALSE  shift, and go to state 10
     QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
+    ID     shift, and go to state 16
     '('    shift, and go to state 17
     '-'    shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
-    expression         go to state 48
+    expression         go to state 47
     logic_expr         go to state 28
     comparison_expr    go to state 29
     add_expr           go to state 30
@@ -511,18 +512,38 @@ State 17
 
 State 18
 
-   13 compound_stat: '{' . $@1 program '}'
+   12 compound_stat: '{' . program '}'
 
-    $default  reduce using rule 12 ($@1)
+    error  shift, and go to state 1
 
-    $@1  go to state 49
+    BOOL     reduce using rule 3 (program)
+    FLOAT    reduce using rule 3 (program)
+    INT      reduce using rule 3 (program)
+    VOID     reduce using rule 3 (program)
+    STRING   reduce using rule 3 (program)
+    TRUE     reduce using rule 3 (program)
+    FALSE    reduce using rule 3 (program)
+    RETURN   reduce using rule 3 (program)
+    PRINT    reduce using rule 3 (program)
+    IF       reduce using rule 3 (program)
+    WHILE    reduce using rule 3 (program)
+    QUOTA    reduce using rule 3 (program)
+    ID       reduce using rule 3 (program)
+    I_CONST  reduce using rule 3 (program)
+    F_CONST  reduce using rule 3 (program)
+    '('      reduce using rule 3 (program)
+    '{'      reduce using rule 3 (program)
+    '}'      reduce using rule 3 (program)
+    '-'      reduce using rule 3 (program)
+
+    program  go to state 48
 
 
 State 19
 
-   83 neg_const: '-' .
+   84 neg_const: '-' .
 
-    $default  reduce using rule 83 (neg_const)
+    $default  reduce using rule 84 (neg_const)
 
 
 State 20
@@ -562,128 +583,128 @@ State 24
 
 State 25
 
-   14 expression_stat: selection_statement .
-   21 selection_statement: selection_statement . ELSE $@3 compound_stat
-   23                    | selection_statement . ELSE IF $@4 '(' expression ')' compound_stat
+   13 expression_stat: selection_statement .
+   20 selection_statement: selection_statement . ELSE $@2 compound_stat
+   22                    | selection_statement . ELSE IF $@3 '(' expression ')' compound_stat
 
-    ELSE  shift, and go to state 50
+    ELSE  shift, and go to state 49
 
-    $default  reduce using rule 14 (expression_stat)
+    $default  reduce using rule 13 (expression_stat)
 
 
 State 26
 
-   15 expression_stat: while_statement .
+   14 expression_stat: while_statement .
 
-    $default  reduce using rule 15 (expression_stat)
+    $default  reduce using rule 14 (expression_stat)
 
 
 State 27
 
-   16 expression_stat: expression . SEMICOLON
-   56 assign_expression: expression . assign_op expression
+   15 expression_stat: expression . SEMICOLON
+   57 assign_expression: expression . assign_op expression
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    SEMICOLON   shift, and go to state 56
-    '='         shift, and go to state 57
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    SEMICOLON   shift, and go to state 55
+    '='         shift, and go to state 56
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 28
 
-   26 expression: logic_expr .
-   29 logic_expr: logic_expr . logic_op comparison_expr
+   25 expression: logic_expr .
+   28 logic_expr: logic_expr . logic_op comparison_expr
 
-    AND_OP  shift, and go to state 59
-    OR_OP   shift, and go to state 60
-    '!'     shift, and go to state 61
+    AND_OP  shift, and go to state 58
+    OR_OP   shift, and go to state 59
+    '!'     shift, and go to state 60
 
-    $default  reduce using rule 26 (expression)
+    $default  reduce using rule 25 (expression)
 
-    logic_op  go to state 62
+    logic_op  go to state 61
 
 
 State 29
 
-   28 logic_expr: comparison_expr .
-   31 comparison_expr: comparison_expr . relation_op add_expr
+   27 logic_expr: comparison_expr .
+   30 comparison_expr: comparison_expr . relation_op add_expr
 
-    GE_OP  shift, and go to state 63
-    LE_OP  shift, and go to state 64
-    EQ_OP  shift, and go to state 65
-    NE_OP  shift, and go to state 66
-    '>'    shift, and go to state 67
-    '<'    shift, and go to state 68
+    GE_OP  shift, and go to state 62
+    LE_OP  shift, and go to state 63
+    EQ_OP  shift, and go to state 64
+    NE_OP  shift, and go to state 65
+    '>'    shift, and go to state 66
+    '<'    shift, and go to state 67
 
-    $default  reduce using rule 28 (logic_expr)
+    $default  reduce using rule 27 (logic_expr)
 
-    relation_op  go to state 69
+    relation_op  go to state 68
 
 
 State 30
 
-   30 comparison_expr: add_expr .
-   33 add_expr: add_expr . addition_op mul_expr
+   29 comparison_expr: add_expr .
+   32 add_expr: add_expr . addition_op mul_expr
 
-    '+'  shift, and go to state 70
-    '-'  shift, and go to state 71
+    '+'  shift, and go to state 69
+    '-'  shift, and go to state 70
 
-    $default  reduce using rule 30 (comparison_expr)
+    $default  reduce using rule 29 (comparison_expr)
 
-    addition_op  go to state 72
+    addition_op  go to state 71
 
 
 State 31
 
-   32 add_expr: mul_expr .
-   35 mul_expr: mul_expr . mul_op postfix_expr
+   31 add_expr: mul_expr .
+   34 mul_expr: mul_expr . mul_op postfix_expr
 
-    '*'  shift, and go to state 73
-    '/'  shift, and go to state 74
-    '%'  shift, and go to state 75
+    '*'  shift, and go to state 72
+    '/'  shift, and go to state 73
+    '%'  shift, and go to state 74
 
-    $default  reduce using rule 32 (add_expr)
+    $default  reduce using rule 31 (add_expr)
 
-    mul_op  go to state 76
+    mul_op  go to state 75
 
 
 State 32
 
-   34 mul_expr: postfix_expr .
+   33 mul_expr: postfix_expr .
 
-    $default  reduce using rule 34 (mul_expr)
+    $default  reduce using rule 33 (mul_expr)
 
 
 State 33
 
-   36 postfix_expr: parenthesis_expr .
-   37             | parenthesis_expr . postfix_op
+   35 postfix_expr: parenthesis_expr .
+   36             | parenthesis_expr . postfix_op
 
-    INC_OP  shift, and go to state 77
-    DEC_OP  shift, and go to state 78
+    INC_OP  shift, and go to state 76
+    DEC_OP  shift, and go to state 77
 
-    $default  reduce using rule 36 (postfix_expr)
+    $default  reduce using rule 35 (postfix_expr)
 
-    postfix_op  go to state 79
+    postfix_op  go to state 78
 
 
 State 34
 
-   27 expression: assign_expression .
+   26 expression: assign_expression .
 
-    $default  reduce using rule 27 (expression)
+    $default  reduce using rule 26 (expression)
 
 
 State 35
 
-   17 expression_stat: return_statement .
+   16 expression_stat: return_statement .
 
-    $default  reduce using rule 17 (expression_stat)
+    $default  reduce using rule 16 (expression_stat)
 
 
 State 36
@@ -695,582 +716,118 @@ State 36
 
 State 37
 
-   38 parenthesis_expr: initializer .
+   37 parenthesis_expr: initializer .
 
-    $default  reduce using rule 38 (parenthesis_expr)
+    $default  reduce using rule 37 (parenthesis_expr)
 
 
 State 38
 
-   77 initializer: neg_const . I_CONST
-   78            | neg_const . F_CONST
+   78 initializer: neg_const . I_CONST
+   79            | neg_const . F_CONST
 
-    I_CONST  shift, and go to state 80
-    F_CONST  shift, and go to state 81
+    I_CONST  shift, and go to state 79
+    F_CONST  shift, and go to state 80
 
 
 State 39
 
     9 declaration: type . ID '=' expression SEMICOLON
    10            | type . ID SEMICOLON
-   66 function_declaration: type . ID $@6 declarator compound_stat
+   67 function_declaration: type . ID $@6 declarator function_tmp
 
-    ID  shift, and go to state 82
+    ID  shift, and go to state 81
 
 
 State 40
 
-   64 return_statement: RETURN SEMICOLON .
+   65 return_statement: RETURN SEMICOLON .
 
-    $default  reduce using rule 64 (return_statement)
+    $default  reduce using rule 65 (return_statement)
 
 
 State 41
 
-   82 initializer: ID .
+   57 assign_expression: expression . assign_op expression
+   64 return_statement: RETURN expression . SEMICOLON
 
-    $default  reduce using rule 82 (initializer)
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    SEMICOLON   shift, and go to state 82
+    '='         shift, and go to state 56
+
+    assign_op  go to state 57
 
 
 State 42
-
-   56 assign_expression: expression . assign_op expression
-   63 return_statement: RETURN expression . SEMICOLON
-
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    SEMICOLON   shift, and go to state 83
-    '='         shift, and go to state 57
-
-    assign_op  go to state 58
-
-
-State 43
 
    11 print_func: PRINT '(' . initializer ')' SEMICOLON
 
     TRUE   shift, and go to state 9
     FALSE  shift, and go to state 10
     QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
+    ID     shift, and go to state 83
     '-'    shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
     initializer  go to state 84
     neg_const    go to state 38
 
 
-State 44
+State 43
 
-   19 selection_statement: IF $@2 . '(' expression ')' compound_stat
+   18 selection_statement: IF $@1 . '(' expression ')' compound_stat
 
     '('  shift, and go to state 85
 
 
-State 45
+State 44
 
-   25 while_statement: WHILE $@5 . '(' expression ')' compound_stat
+   24 while_statement: WHILE $@4 . '(' expression ')' compound_stat
 
     '('  shift, and go to state 86
 
 
-State 46
+State 45
 
-   79 initializer: QUOTA STRING_CONST . QUOTA
+   80 initializer: QUOTA STRING_CONST . QUOTA
 
     QUOTA  shift, and go to state 87
 
 
-State 47
+State 46
 
-   68 function_declaration: ID $@7 . declarator2 SEMICOLON
+   39 parenthesis_expr: ID $@5 . declarator2
 
     '('  shift, and go to state 88
 
     declarator2  go to state 89
 
 
-State 48
+State 47
 
-   39 parenthesis_expr: '(' expression . ')'
-   56 assign_expression: expression . assign_op expression
+   40 parenthesis_expr: '(' expression . ')'
+   57 assign_expression: expression . assign_op expression
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
     ')'         shift, and go to state 90
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
-State 49
-
-   13 compound_stat: '{' $@1 . program '}'
-
-    error  shift, and go to state 1
-
-    BOOL     reduce using rule 3 (program)
-    FLOAT    reduce using rule 3 (program)
-    INT      reduce using rule 3 (program)
-    VOID     reduce using rule 3 (program)
-    STRING   reduce using rule 3 (program)
-    TRUE     reduce using rule 3 (program)
-    FALSE    reduce using rule 3 (program)
-    RETURN   reduce using rule 3 (program)
-    PRINT    reduce using rule 3 (program)
-    IF       reduce using rule 3 (program)
-    WHILE    reduce using rule 3 (program)
-    QUOTA    reduce using rule 3 (program)
-    ID       reduce using rule 3 (program)
-    I_CONST  reduce using rule 3 (program)
-    F_CONST  reduce using rule 3 (program)
-    '('      reduce using rule 3 (program)
-    '{'      reduce using rule 3 (program)
-    '}'      reduce using rule 3 (program)
-    '-'      reduce using rule 3 (program)
-
-    program  go to state 91
-
-
-State 50
-
-   21 selection_statement: selection_statement ELSE . $@3 compound_stat
-   23                    | selection_statement ELSE . IF $@4 '(' expression ')' compound_stat
-
-    IF  shift, and go to state 92
-
-    $default  reduce using rule 20 ($@3)
-
-    $@3  go to state 93
-
-
-State 51
-
-   57 assign_op: ADD_ASSIGN .
-
-    $default  reduce using rule 57 (assign_op)
-
-
-State 52
-
-   58 assign_op: SUB_ASSIGN .
-
-    $default  reduce using rule 58 (assign_op)
-
-
-State 53
-
-   59 assign_op: MUL_ASSIGN .
-
-    $default  reduce using rule 59 (assign_op)
-
-
-State 54
-
-   60 assign_op: DIV_ASSIGN .
-
-    $default  reduce using rule 60 (assign_op)
-
-
-State 55
-
-   61 assign_op: MOD_ASSIGN .
-
-    $default  reduce using rule 61 (assign_op)
-
-
-State 56
-
-   16 expression_stat: expression SEMICOLON .
-
-    $default  reduce using rule 16 (expression_stat)
-
-
-State 57
-
-   62 assign_op: '=' .
-
-    $default  reduce using rule 62 (assign_op)
-
-
-State 58
-
-   56 assign_expression: expression assign_op . expression
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    expression         go to state 94
-    logic_expr         go to state 28
-    comparison_expr    go to state 29
-    add_expr           go to state 30
-    mul_expr           go to state 31
-    postfix_expr       go to state 32
-    parenthesis_expr   go to state 33
-    assign_expression  go to state 34
-    initializer        go to state 37
-    neg_const          go to state 38
-
-
-State 59
-
-   53 logic_op: AND_OP .
-
-    $default  reduce using rule 53 (logic_op)
-
-
-State 60
-
-   54 logic_op: OR_OP .
-
-    $default  reduce using rule 54 (logic_op)
-
-
-State 61
-
-   55 logic_op: '!' .
-
-    $default  reduce using rule 55 (logic_op)
-
-
-State 62
-
-   29 logic_expr: logic_expr logic_op . comparison_expr
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    comparison_expr   go to state 95
-    add_expr          go to state 30
-    mul_expr          go to state 31
-    postfix_expr      go to state 32
-    parenthesis_expr  go to state 33
-    initializer       go to state 37
-    neg_const         go to state 38
-
-
-State 63
-
-   47 relation_op: GE_OP .
-
-    $default  reduce using rule 47 (relation_op)
-
-
-State 64
-
-   48 relation_op: LE_OP .
-
-    $default  reduce using rule 48 (relation_op)
-
-
-State 65
-
-   49 relation_op: EQ_OP .
-
-    $default  reduce using rule 49 (relation_op)
-
-
-State 66
-
-   50 relation_op: NE_OP .
-
-    $default  reduce using rule 50 (relation_op)
-
-
-State 67
-
-   45 relation_op: '>' .
-
-    $default  reduce using rule 45 (relation_op)
-
-
-State 68
-
-   46 relation_op: '<' .
-
-    $default  reduce using rule 46 (relation_op)
-
-
-State 69
-
-   31 comparison_expr: comparison_expr relation_op . add_expr
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    add_expr          go to state 96
-    mul_expr          go to state 31
-    postfix_expr      go to state 32
-    parenthesis_expr  go to state 33
-    initializer       go to state 37
-    neg_const         go to state 38
-
-
-State 70
-
-   51 addition_op: '+' .
-
-    $default  reduce using rule 51 (addition_op)
-
-
-State 71
-
-   52 addition_op: '-' .
-
-    $default  reduce using rule 52 (addition_op)
-
-
-State 72
-
-   33 add_expr: add_expr addition_op . mul_expr
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    mul_expr          go to state 97
-    postfix_expr      go to state 32
-    parenthesis_expr  go to state 33
-    initializer       go to state 37
-    neg_const         go to state 38
-
-
-State 73
-
-   42 mul_op: '*' .
-
-    $default  reduce using rule 42 (mul_op)
-
-
-State 74
-
-   43 mul_op: '/' .
-
-    $default  reduce using rule 43 (mul_op)
-
-
-State 75
-
-   44 mul_op: '%' .
-
-    $default  reduce using rule 44 (mul_op)
-
-
-State 76
-
-   35 mul_expr: mul_expr mul_op . postfix_expr
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    postfix_expr      go to state 98
-    parenthesis_expr  go to state 33
-    initializer       go to state 37
-    neg_const         go to state 38
-
-
-State 77
-
-   40 postfix_op: INC_OP .
-
-    $default  reduce using rule 40 (postfix_op)
-
-
-State 78
-
-   41 postfix_op: DEC_OP .
-
-    $default  reduce using rule 41 (postfix_op)
-
-
-State 79
-
-   37 postfix_expr: parenthesis_expr postfix_op .
-
-    $default  reduce using rule 37 (postfix_expr)
-
-
-State 80
-
-   77 initializer: neg_const I_CONST .
-
-    $default  reduce using rule 77 (initializer)
-
-
-State 81
-
-   78 initializer: neg_const F_CONST .
-
-    $default  reduce using rule 78 (initializer)
-
-
-State 82
-
-    9 declaration: type ID . '=' expression SEMICOLON
-   10            | type ID . SEMICOLON
-   66 function_declaration: type ID . $@6 declarator compound_stat
-
-    SEMICOLON  shift, and go to state 99
-    '='        shift, and go to state 100
-
-    $default  reduce using rule 65 ($@6)
-
-    $@6  go to state 101
-
-
-State 83
-
-   63 return_statement: RETURN expression SEMICOLON .
-
-    $default  reduce using rule 63 (return_statement)
-
-
-State 84
-
-   11 print_func: PRINT '(' initializer . ')' SEMICOLON
-
-    ')'  shift, and go to state 102
-
-
-State 85
-
-   19 selection_statement: IF $@2 '(' . expression ')' compound_stat
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    expression         go to state 103
-    logic_expr         go to state 28
-    comparison_expr    go to state 29
-    add_expr           go to state 30
-    mul_expr           go to state 31
-    postfix_expr       go to state 32
-    parenthesis_expr   go to state 33
-    assign_expression  go to state 34
-    initializer        go to state 37
-    neg_const          go to state 38
-
-
-State 86
-
-   25 while_statement: WHILE $@5 '(' . expression ')' compound_stat
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    expression         go to state 104
-    logic_expr         go to state 28
-    comparison_expr    go to state 29
-    add_expr           go to state 30
-    mul_expr           go to state 31
-    postfix_expr       go to state 32
-    parenthesis_expr   go to state 33
-    assign_expression  go to state 34
-    initializer        go to state 37
-    neg_const          go to state 38
-
-
-State 87
-
-   79 initializer: QUOTA STRING_CONST QUOTA .
-
-    $default  reduce using rule 79 (initializer)
-
-
-State 88
-
-   73 declarator2: '(' . identifier_list2 ')'
-   74            | '(' . ')'
-
-    TRUE   shift, and go to state 9
-    FALSE  shift, and go to state 10
-    QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
-    '('    shift, and go to state 17
-    ')'    shift, and go to state 105
-    '-'    shift, and go to state 19
-
-    $default  reduce using rule 84 (neg_const)
-
-    expression         go to state 106
-    logic_expr         go to state 28
-    comparison_expr    go to state 29
-    add_expr           go to state 30
-    mul_expr           go to state 31
-    postfix_expr       go to state 32
-    parenthesis_expr   go to state 33
-    assign_expression  go to state 34
-    identifier_list2   go to state 107
-    initializer        go to state 37
-    neg_const          go to state 38
-
-
-State 89
-
-   68 function_declaration: ID $@7 declarator2 . SEMICOLON
-
-    SEMICOLON  shift, and go to state 108
-
-
-State 90
-
-   39 parenthesis_expr: '(' expression ')' .
-
-    $default  reduce using rule 39 (parenthesis_expr)
-
-
-State 91
+State 48
 
     1 program: program . stat
-   13 compound_stat: '{' $@1 program . '}'
+   12 compound_stat: '{' program . '}'
 
     BOOL    shift, and go to state 4
     FLOAT   shift, and go to state 5
@@ -1287,10 +844,10 @@ State 91
     ID      shift, and go to state 16
     '('     shift, and go to state 17
     '{'     shift, and go to state 18
-    '}'     shift, and go to state 109
+    '}'     shift, and go to state 91
     '-'     shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
     stat                  go to state 20
     declaration           go to state 21
@@ -1314,96 +871,538 @@ State 91
     type                  go to state 39
 
 
+State 49
+
+   20 selection_statement: selection_statement ELSE . $@2 compound_stat
+   22                    | selection_statement ELSE . IF $@3 '(' expression ')' compound_stat
+
+    IF  shift, and go to state 92
+
+    $default  reduce using rule 19 ($@2)
+
+    $@2  go to state 93
+
+
+State 50
+
+   58 assign_op: ADD_ASSIGN .
+
+    $default  reduce using rule 58 (assign_op)
+
+
+State 51
+
+   59 assign_op: SUB_ASSIGN .
+
+    $default  reduce using rule 59 (assign_op)
+
+
+State 52
+
+   60 assign_op: MUL_ASSIGN .
+
+    $default  reduce using rule 60 (assign_op)
+
+
+State 53
+
+   61 assign_op: DIV_ASSIGN .
+
+    $default  reduce using rule 61 (assign_op)
+
+
+State 54
+
+   62 assign_op: MOD_ASSIGN .
+
+    $default  reduce using rule 62 (assign_op)
+
+
+State 55
+
+   15 expression_stat: expression SEMICOLON .
+
+    $default  reduce using rule 15 (expression_stat)
+
+
+State 56
+
+   63 assign_op: '=' .
+
+    $default  reduce using rule 63 (assign_op)
+
+
+State 57
+
+   57 assign_expression: expression assign_op . expression
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    expression         go to state 94
+    logic_expr         go to state 28
+    comparison_expr    go to state 29
+    add_expr           go to state 30
+    mul_expr           go to state 31
+    postfix_expr       go to state 32
+    parenthesis_expr   go to state 33
+    assign_expression  go to state 34
+    initializer        go to state 37
+    neg_const          go to state 38
+
+
+State 58
+
+   54 logic_op: AND_OP .
+
+    $default  reduce using rule 54 (logic_op)
+
+
+State 59
+
+   55 logic_op: OR_OP .
+
+    $default  reduce using rule 55 (logic_op)
+
+
+State 60
+
+   56 logic_op: '!' .
+
+    $default  reduce using rule 56 (logic_op)
+
+
+State 61
+
+   28 logic_expr: logic_expr logic_op . comparison_expr
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    comparison_expr   go to state 95
+    add_expr          go to state 30
+    mul_expr          go to state 31
+    postfix_expr      go to state 32
+    parenthesis_expr  go to state 33
+    initializer       go to state 37
+    neg_const         go to state 38
+
+
+State 62
+
+   48 relation_op: GE_OP .
+
+    $default  reduce using rule 48 (relation_op)
+
+
+State 63
+
+   49 relation_op: LE_OP .
+
+    $default  reduce using rule 49 (relation_op)
+
+
+State 64
+
+   50 relation_op: EQ_OP .
+
+    $default  reduce using rule 50 (relation_op)
+
+
+State 65
+
+   51 relation_op: NE_OP .
+
+    $default  reduce using rule 51 (relation_op)
+
+
+State 66
+
+   46 relation_op: '>' .
+
+    $default  reduce using rule 46 (relation_op)
+
+
+State 67
+
+   47 relation_op: '<' .
+
+    $default  reduce using rule 47 (relation_op)
+
+
+State 68
+
+   30 comparison_expr: comparison_expr relation_op . add_expr
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    add_expr          go to state 96
+    mul_expr          go to state 31
+    postfix_expr      go to state 32
+    parenthesis_expr  go to state 33
+    initializer       go to state 37
+    neg_const         go to state 38
+
+
+State 69
+
+   52 addition_op: '+' .
+
+    $default  reduce using rule 52 (addition_op)
+
+
+State 70
+
+   53 addition_op: '-' .
+
+    $default  reduce using rule 53 (addition_op)
+
+
+State 71
+
+   32 add_expr: add_expr addition_op . mul_expr
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    mul_expr          go to state 97
+    postfix_expr      go to state 32
+    parenthesis_expr  go to state 33
+    initializer       go to state 37
+    neg_const         go to state 38
+
+
+State 72
+
+   43 mul_op: '*' .
+
+    $default  reduce using rule 43 (mul_op)
+
+
+State 73
+
+   44 mul_op: '/' .
+
+    $default  reduce using rule 44 (mul_op)
+
+
+State 74
+
+   45 mul_op: '%' .
+
+    $default  reduce using rule 45 (mul_op)
+
+
+State 75
+
+   34 mul_expr: mul_expr mul_op . postfix_expr
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    postfix_expr      go to state 98
+    parenthesis_expr  go to state 33
+    initializer       go to state 37
+    neg_const         go to state 38
+
+
+State 76
+
+   41 postfix_op: INC_OP .
+
+    $default  reduce using rule 41 (postfix_op)
+
+
+State 77
+
+   42 postfix_op: DEC_OP .
+
+    $default  reduce using rule 42 (postfix_op)
+
+
+State 78
+
+   36 postfix_expr: parenthesis_expr postfix_op .
+
+    $default  reduce using rule 36 (postfix_expr)
+
+
+State 79
+
+   78 initializer: neg_const I_CONST .
+
+    $default  reduce using rule 78 (initializer)
+
+
+State 80
+
+   79 initializer: neg_const F_CONST .
+
+    $default  reduce using rule 79 (initializer)
+
+
+State 81
+
+    9 declaration: type ID . '=' expression SEMICOLON
+   10            | type ID . SEMICOLON
+   67 function_declaration: type ID . $@6 declarator function_tmp
+
+    SEMICOLON  shift, and go to state 99
+    '='        shift, and go to state 100
+
+    $default  reduce using rule 66 ($@6)
+
+    $@6  go to state 101
+
+
+State 82
+
+   64 return_statement: RETURN expression SEMICOLON .
+
+    $default  reduce using rule 64 (return_statement)
+
+
+State 83
+
+   83 initializer: ID .
+
+    $default  reduce using rule 83 (initializer)
+
+
+State 84
+
+   11 print_func: PRINT '(' initializer . ')' SEMICOLON
+
+    ')'  shift, and go to state 102
+
+
+State 85
+
+   18 selection_statement: IF $@1 '(' . expression ')' compound_stat
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    expression         go to state 103
+    logic_expr         go to state 28
+    comparison_expr    go to state 29
+    add_expr           go to state 30
+    mul_expr           go to state 31
+    postfix_expr       go to state 32
+    parenthesis_expr   go to state 33
+    assign_expression  go to state 34
+    initializer        go to state 37
+    neg_const          go to state 38
+
+
+State 86
+
+   24 while_statement: WHILE $@4 '(' . expression ')' compound_stat
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    expression         go to state 104
+    logic_expr         go to state 28
+    comparison_expr    go to state 29
+    add_expr           go to state 30
+    mul_expr           go to state 31
+    postfix_expr       go to state 32
+    parenthesis_expr   go to state 33
+    assign_expression  go to state 34
+    initializer        go to state 37
+    neg_const          go to state 38
+
+
+State 87
+
+   80 initializer: QUOTA STRING_CONST QUOTA .
+
+    $default  reduce using rule 80 (initializer)
+
+
+State 88
+
+   74 declarator2: '(' . identifier_list2 ')'
+   75            | '(' . ')'
+
+    TRUE   shift, and go to state 9
+    FALSE  shift, and go to state 10
+    QUOTA  shift, and go to state 15
+    ID     shift, and go to state 16
+    '('    shift, and go to state 17
+    ')'    shift, and go to state 105
+    '-'    shift, and go to state 19
+
+    $default  reduce using rule 85 (neg_const)
+
+    expression         go to state 106
+    logic_expr         go to state 28
+    comparison_expr    go to state 29
+    add_expr           go to state 30
+    mul_expr           go to state 31
+    postfix_expr       go to state 32
+    parenthesis_expr   go to state 33
+    assign_expression  go to state 34
+    identifier_list2   go to state 107
+    initializer        go to state 37
+    neg_const          go to state 38
+
+
+State 89
+
+   39 parenthesis_expr: ID $@5 declarator2 .
+
+    $default  reduce using rule 39 (parenthesis_expr)
+
+
+State 90
+
+   40 parenthesis_expr: '(' expression ')' .
+
+    $default  reduce using rule 40 (parenthesis_expr)
+
+
+State 91
+
+   12 compound_stat: '{' program '}' .
+
+    $default  reduce using rule 12 (compound_stat)
+
+
 State 92
 
-   23 selection_statement: selection_statement ELSE IF . $@4 '(' expression ')' compound_stat
+   22 selection_statement: selection_statement ELSE IF . $@3 '(' expression ')' compound_stat
 
-    $default  reduce using rule 22 ($@4)
+    $default  reduce using rule 21 ($@3)
 
-    $@4  go to state 110
+    $@3  go to state 108
 
 
 State 93
 
-   21 selection_statement: selection_statement ELSE $@3 . compound_stat
+   20 selection_statement: selection_statement ELSE $@2 . compound_stat
 
     '{'  shift, and go to state 18
 
-    compound_stat  go to state 111
+    compound_stat  go to state 109
 
 
 State 94
 
-   56 assign_expression: expression . assign_op expression
-   56                  | expression assign_op expression .
+   57 assign_expression: expression . assign_op expression
+   57                  | expression assign_op expression .
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
 
-    ADD_ASSIGN  [reduce using rule 56 (assign_expression)]
-    SUB_ASSIGN  [reduce using rule 56 (assign_expression)]
-    MUL_ASSIGN  [reduce using rule 56 (assign_expression)]
-    DIV_ASSIGN  [reduce using rule 56 (assign_expression)]
-    MOD_ASSIGN  [reduce using rule 56 (assign_expression)]
-    '='         [reduce using rule 56 (assign_expression)]
-    $default    reduce using rule 56 (assign_expression)
+    ADD_ASSIGN  [reduce using rule 57 (assign_expression)]
+    SUB_ASSIGN  [reduce using rule 57 (assign_expression)]
+    MUL_ASSIGN  [reduce using rule 57 (assign_expression)]
+    DIV_ASSIGN  [reduce using rule 57 (assign_expression)]
+    MOD_ASSIGN  [reduce using rule 57 (assign_expression)]
+    '='         [reduce using rule 57 (assign_expression)]
+    $default    reduce using rule 57 (assign_expression)
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 95
 
-   29 logic_expr: logic_expr logic_op comparison_expr .
-   31 comparison_expr: comparison_expr . relation_op add_expr
+   28 logic_expr: logic_expr logic_op comparison_expr .
+   30 comparison_expr: comparison_expr . relation_op add_expr
 
-    GE_OP  shift, and go to state 63
-    LE_OP  shift, and go to state 64
-    EQ_OP  shift, and go to state 65
-    NE_OP  shift, and go to state 66
-    '>'    shift, and go to state 67
-    '<'    shift, and go to state 68
+    GE_OP  shift, and go to state 62
+    LE_OP  shift, and go to state 63
+    EQ_OP  shift, and go to state 64
+    NE_OP  shift, and go to state 65
+    '>'    shift, and go to state 66
+    '<'    shift, and go to state 67
 
-    $default  reduce using rule 29 (logic_expr)
+    $default  reduce using rule 28 (logic_expr)
 
-    relation_op  go to state 69
+    relation_op  go to state 68
 
 
 State 96
 
-   31 comparison_expr: comparison_expr relation_op add_expr .
-   33 add_expr: add_expr . addition_op mul_expr
+   30 comparison_expr: comparison_expr relation_op add_expr .
+   32 add_expr: add_expr . addition_op mul_expr
 
-    '+'  shift, and go to state 70
-    '-'  shift, and go to state 71
+    '+'  shift, and go to state 69
+    '-'  shift, and go to state 70
 
-    $default  reduce using rule 31 (comparison_expr)
+    $default  reduce using rule 30 (comparison_expr)
 
-    addition_op  go to state 72
+    addition_op  go to state 71
 
 
 State 97
 
-   33 add_expr: add_expr addition_op mul_expr .
-   35 mul_expr: mul_expr . mul_op postfix_expr
+   32 add_expr: add_expr addition_op mul_expr .
+   34 mul_expr: mul_expr . mul_op postfix_expr
 
-    '*'  shift, and go to state 73
-    '/'  shift, and go to state 74
-    '%'  shift, and go to state 75
+    '*'  shift, and go to state 72
+    '/'  shift, and go to state 73
+    '%'  shift, and go to state 74
 
-    $default  reduce using rule 33 (add_expr)
+    $default  reduce using rule 32 (add_expr)
 
-    mul_op  go to state 76
+    mul_op  go to state 75
 
 
 State 98
 
-   35 mul_expr: mul_expr mul_op postfix_expr .
+   34 mul_expr: mul_expr mul_op postfix_expr .
 
-    $default  reduce using rule 35 (mul_expr)
+    $default  reduce using rule 34 (mul_expr)
 
 
 State 99
@@ -1420,13 +1419,13 @@ State 100
     TRUE   shift, and go to state 9
     FALSE  shift, and go to state 10
     QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
+    ID     shift, and go to state 16
     '('    shift, and go to state 17
     '-'    shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
-    expression         go to state 112
+    expression         go to state 110
     logic_expr         go to state 28
     comparison_expr    go to state 29
     add_expr           go to state 30
@@ -1440,198 +1439,186 @@ State 100
 
 State 101
 
-   66 function_declaration: type ID $@6 . declarator compound_stat
+   67 function_declaration: type ID $@6 . declarator function_tmp
 
-    '('  shift, and go to state 113
+    '('  shift, and go to state 111
 
-    declarator  go to state 114
+    declarator  go to state 112
 
 
 State 102
 
    11 print_func: PRINT '(' initializer ')' . SEMICOLON
 
-    SEMICOLON  shift, and go to state 115
+    SEMICOLON  shift, and go to state 113
 
 
 State 103
 
-   19 selection_statement: IF $@2 '(' expression . ')' compound_stat
-   56 assign_expression: expression . assign_op expression
+   18 selection_statement: IF $@1 '(' expression . ')' compound_stat
+   57 assign_expression: expression . assign_op expression
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
-    ')'         shift, and go to state 116
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
+    ')'         shift, and go to state 114
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 104
 
-   25 while_statement: WHILE $@5 '(' expression . ')' compound_stat
-   56 assign_expression: expression . assign_op expression
+   24 while_statement: WHILE $@4 '(' expression . ')' compound_stat
+   57 assign_expression: expression . assign_op expression
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
-    ')'         shift, and go to state 117
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
+    ')'         shift, and go to state 115
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 105
 
-   74 declarator2: '(' ')' .
+   75 declarator2: '(' ')' .
 
-    $default  reduce using rule 74 (declarator2)
+    $default  reduce using rule 75 (declarator2)
 
 
 State 106
 
-   56 assign_expression: expression . assign_op expression
-   76 identifier_list2: expression .
+   57 assign_expression: expression . assign_op expression
+   77 identifier_list2: expression .
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
 
-    $default  reduce using rule 76 (identifier_list2)
+    $default  reduce using rule 77 (identifier_list2)
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 107
 
-   73 declarator2: '(' identifier_list2 . ')'
-   75 identifier_list2: identifier_list2 . ',' expression
+   74 declarator2: '(' identifier_list2 . ')'
+   76 identifier_list2: identifier_list2 . ',' expression
 
-    ')'  shift, and go to state 118
-    ','  shift, and go to state 119
+    ')'  shift, and go to state 116
+    ','  shift, and go to state 117
 
 
 State 108
 
-   68 function_declaration: ID $@7 declarator2 SEMICOLON .
+   22 selection_statement: selection_statement ELSE IF $@3 . '(' expression ')' compound_stat
 
-    $default  reduce using rule 68 (function_declaration)
+    '('  shift, and go to state 118
 
 
 State 109
 
-   13 compound_stat: '{' $@1 program '}' .
+   20 selection_statement: selection_statement ELSE $@2 compound_stat .
 
-    $default  reduce using rule 13 (compound_stat)
+    $default  reduce using rule 20 (selection_statement)
 
 
 State 110
 
-   23 selection_statement: selection_statement ELSE IF $@4 . '(' expression ')' compound_stat
+    9 declaration: type ID '=' expression . SEMICOLON
+   57 assign_expression: expression . assign_op expression
 
-    '('  shift, and go to state 120
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    SEMICOLON   shift, and go to state 119
+    '='         shift, and go to state 56
+
+    assign_op  go to state 57
 
 
 State 111
 
-   21 selection_statement: selection_statement ELSE $@3 compound_stat .
-
-    $default  reduce using rule 21 (selection_statement)
-
-
-State 112
-
-    9 declaration: type ID '=' expression . SEMICOLON
-   56 assign_expression: expression . assign_op expression
-
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    SEMICOLON   shift, and go to state 121
-    '='         shift, and go to state 57
-
-    assign_op  go to state 58
-
-
-State 113
-
-   69 declarator: '(' . identifier_list ')'
-   70           | '(' . ')'
+   70 declarator: '(' . identifier_list ')'
+   71           | '(' . ')'
 
     BOOL    shift, and go to state 4
     FLOAT   shift, and go to state 5
     INT     shift, and go to state 6
     VOID    shift, and go to state 7
     STRING  shift, and go to state 8
-    ')'     shift, and go to state 122
+    ')'     shift, and go to state 120
 
-    identifier_list  go to state 123
-    type             go to state 124
-
-
-State 114
-
-   66 function_declaration: type ID $@6 declarator . compound_stat
-
-    '{'  shift, and go to state 18
-
-    compound_stat  go to state 125
+    identifier_list  go to state 121
+    type             go to state 122
 
 
-State 115
+State 112
+
+   67 function_declaration: type ID $@6 declarator . function_tmp
+
+    SEMICOLON  shift, and go to state 123
+    '{'        shift, and go to state 18
+
+    compound_stat  go to state 124
+    function_tmp   go to state 125
+
+
+State 113
 
    11 print_func: PRINT '(' initializer ')' SEMICOLON .
 
     $default  reduce using rule 11 (print_func)
 
 
-State 116
+State 114
 
-   19 selection_statement: IF $@2 '(' expression ')' . compound_stat
+   18 selection_statement: IF $@1 '(' expression ')' . compound_stat
 
     '{'  shift, and go to state 18
 
     compound_stat  go to state 126
 
 
-State 117
+State 115
 
-   25 while_statement: WHILE $@5 '(' expression ')' . compound_stat
+   24 while_statement: WHILE $@4 '(' expression ')' . compound_stat
 
     '{'  shift, and go to state 18
 
     compound_stat  go to state 127
 
 
-State 118
+State 116
 
-   73 declarator2: '(' identifier_list2 ')' .
+   74 declarator2: '(' identifier_list2 ')' .
 
-    $default  reduce using rule 73 (declarator2)
+    $default  reduce using rule 74 (declarator2)
 
 
-State 119
+State 117
 
-   75 identifier_list2: identifier_list2 ',' . expression
+   76 identifier_list2: identifier_list2 ',' . expression
 
     TRUE   shift, and go to state 9
     FALSE  shift, and go to state 10
     QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
+    ID     shift, and go to state 16
     '('    shift, and go to state 17
     '-'    shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
     expression         go to state 128
     logic_expr         go to state 28
@@ -1645,18 +1632,18 @@ State 119
     neg_const          go to state 38
 
 
-State 120
+State 118
 
-   23 selection_statement: selection_statement ELSE IF $@4 '(' . expression ')' compound_stat
+   22 selection_statement: selection_statement ELSE IF $@3 '(' . expression ')' compound_stat
 
     TRUE   shift, and go to state 9
     FALSE  shift, and go to state 10
     QUOTA  shift, and go to state 15
-    ID     shift, and go to state 41
+    ID     shift, and go to state 16
     '('    shift, and go to state 17
     '-'    shift, and go to state 19
 
-    $default  reduce using rule 84 (neg_const)
+    $default  reduce using rule 85 (neg_const)
 
     expression         go to state 129
     logic_expr         go to state 28
@@ -1670,100 +1657,114 @@ State 120
     neg_const          go to state 38
 
 
-State 121
+State 119
 
     9 declaration: type ID '=' expression SEMICOLON .
 
     $default  reduce using rule 9 (declaration)
 
 
-State 122
+State 120
 
-   70 declarator: '(' ')' .
+   71 declarator: '(' ')' .
 
-    $default  reduce using rule 70 (declarator)
+    $default  reduce using rule 71 (declarator)
 
 
-State 123
+State 121
 
-   69 declarator: '(' identifier_list . ')'
-   71 identifier_list: identifier_list . ',' type ID
+   70 declarator: '(' identifier_list . ')'
+   72 identifier_list: identifier_list . ',' type ID
 
     ')'  shift, and go to state 130
     ','  shift, and go to state 131
 
 
-State 124
+State 122
 
-   72 identifier_list: type . ID
+   73 identifier_list: type . ID
 
     ID  shift, and go to state 132
 
 
+State 123
+
+   69 function_tmp: SEMICOLON .
+
+    $default  reduce using rule 69 (function_tmp)
+
+
+State 124
+
+   68 function_tmp: compound_stat .
+
+    $default  reduce using rule 68 (function_tmp)
+
+
 State 125
 
-   66 function_declaration: type ID $@6 declarator compound_stat .
+   67 function_declaration: type ID $@6 declarator function_tmp .
 
-    $default  reduce using rule 66 (function_declaration)
+    $default  reduce using rule 67 (function_declaration)
 
 
 State 126
 
-   19 selection_statement: IF $@2 '(' expression ')' compound_stat .
+   18 selection_statement: IF $@1 '(' expression ')' compound_stat .
 
-    $default  reduce using rule 19 (selection_statement)
+    $default  reduce using rule 18 (selection_statement)
 
 
 State 127
 
-   25 while_statement: WHILE $@5 '(' expression ')' compound_stat .
+   24 while_statement: WHILE $@4 '(' expression ')' compound_stat .
 
-    $default  reduce using rule 25 (while_statement)
+    $default  reduce using rule 24 (while_statement)
 
 
 State 128
 
-   56 assign_expression: expression . assign_op expression
-   75 identifier_list2: identifier_list2 ',' expression .
+   57 assign_expression: expression . assign_op expression
+   76 identifier_list2: identifier_list2 ',' expression .
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
 
-    $default  reduce using rule 75 (identifier_list2)
+    $default  reduce using rule 76 (identifier_list2)
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 129
 
-   23 selection_statement: selection_statement ELSE IF $@4 '(' expression . ')' compound_stat
-   56 assign_expression: expression . assign_op expression
+   22 selection_statement: selection_statement ELSE IF $@3 '(' expression . ')' compound_stat
+   57 assign_expression: expression . assign_op expression
 
-    ADD_ASSIGN  shift, and go to state 51
-    SUB_ASSIGN  shift, and go to state 52
-    MUL_ASSIGN  shift, and go to state 53
-    DIV_ASSIGN  shift, and go to state 54
-    MOD_ASSIGN  shift, and go to state 55
-    '='         shift, and go to state 57
+    ADD_ASSIGN  shift, and go to state 50
+    SUB_ASSIGN  shift, and go to state 51
+    MUL_ASSIGN  shift, and go to state 52
+    DIV_ASSIGN  shift, and go to state 53
+    MOD_ASSIGN  shift, and go to state 54
+    '='         shift, and go to state 56
     ')'         shift, and go to state 133
 
-    assign_op  go to state 58
+    assign_op  go to state 57
 
 
 State 130
 
-   69 declarator: '(' identifier_list ')' .
+   70 declarator: '(' identifier_list ')' .
 
-    $default  reduce using rule 69 (declarator)
+    $default  reduce using rule 70 (declarator)
 
 
 State 131
 
-   71 identifier_list: identifier_list ',' . type ID
+   72 identifier_list: identifier_list ',' . type ID
 
     BOOL    shift, and go to state 4
     FLOAT   shift, and go to state 5
@@ -1776,14 +1777,14 @@ State 131
 
 State 132
 
-   72 identifier_list: type ID .
+   73 identifier_list: type ID .
 
-    $default  reduce using rule 72 (identifier_list)
+    $default  reduce using rule 73 (identifier_list)
 
 
 State 133
 
-   23 selection_statement: selection_statement ELSE IF $@4 '(' expression ')' . compound_stat
+   22 selection_statement: selection_statement ELSE IF $@3 '(' expression ')' . compound_stat
 
     '{'  shift, and go to state 18
 
@@ -1792,20 +1793,20 @@ State 133
 
 State 134
 
-   71 identifier_list: identifier_list ',' type . ID
+   72 identifier_list: identifier_list ',' type . ID
 
     ID  shift, and go to state 136
 
 
 State 135
 
-   23 selection_statement: selection_statement ELSE IF $@4 '(' expression ')' compound_stat .
+   22 selection_statement: selection_statement ELSE IF $@3 '(' expression ')' compound_stat .
 
-    $default  reduce using rule 23 (selection_statement)
+    $default  reduce using rule 22 (selection_statement)
 
 
 State 136
 
-   71 identifier_list: identifier_list ',' type ID .
+   72 identifier_list: identifier_list ',' type ID .
 
-    $default  reduce using rule 71 (identifier_list)
+    $default  reduce using rule 72 (identifier_list)

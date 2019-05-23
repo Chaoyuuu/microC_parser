@@ -130,7 +130,7 @@ id			{letter}+({letter}|{digit})*
 
 [;]         { CONCAT; return(SEMICOLON); }
 [\n]        {  printf("%d:", line_num);
-                if(strlen(buf) != 0){
+               if(strlen(buf) != 0){
                     printf(" %s", buf);
                 } 
                 printf("\n");

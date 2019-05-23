@@ -1199,7 +1199,7 @@ case 56:
 YY_RULE_SETUP
 #line 132 "compiler_hw2.l"
 {  printf("%d:", line_num);
-                if(strlen(buf) != 0){
+               if(strlen(buf) != 0){
                     printf(" %s", buf);
                 } 
                 printf("\n");
