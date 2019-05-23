@@ -46,9 +46,11 @@ extern char error_msg[256];
 extern int dump_flag;
 extern void yyerror(char *s);
 
+char attri_buf[256];
+
 
 /* Symbol table function - you can add new function if needed. */
-void get_attribute();
+void get_attribute(struct Entry * tmp);
 void create_symbol();
 void lookup_symbol();
 void lookup_function();
@@ -254,9 +256,9 @@ declarator
 
 identifier_list
     : identifier_list ',' type ID 
-        { get_attribute($3); insert_symbol($3, $4, type_p);}
+        { /* get_attribute($3); */ insert_symbol($3, $4, type_p);}
     | type ID
-        { get_attribute($1); insert_symbol($1, $2, type_p);}
+        { /* get_attribute($1); */ insert_symbol($1, $2, type_p);}
 ;
 
 declarator2
@@ -328,7 +330,7 @@ void yyerror(char *s)
     }
 
     printf("\n|-----------------------------------------------|\n");
-    printf("| Error found in line %d: %s", yylineno, buf);
+    printf("| Error found in line %d: %s\n", yylineno, buf);
     printf("| %s",s);
     printf("\n|-----------------------------------------------|\n\n");
 
@@ -381,20 +383,33 @@ void insert_symbol(char *t, char* n, char* k) {
     strcpy(e_ptr->type, t);
     strcpy(e_ptr->kind, k);
     strcpy(e_ptr->name, n);  
+
+    if(strcmp(k, "function") == 0){
+        // printf("in get attribute !!!");
+        get_attribute(e_ptr);
+    }
     //e_ptr->attribute = NULL;
 
     // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 
-void get_attribute(char *t){
+void get_attribute(struct Entry * tmp){
     // get entry_attribute
-    struct Table *ptr = table_current->pre;
-    struct Entry *e_ptr = ptr->entry_current;
+    
+    struct Entry *e_ptr = tmp;   //add function attribute
+    struct Table *dump = table_dump;    //find parameter table
+    struct Entry *e_dump = dump->entry_header; //find parameter entry
 
-    if(strlen(e_ptr->attribute) != 0){
-        strcat(e_ptr->attribute, ", ");
+    while(e_dump != NULL){
+        if(strcmp(e_dump->kind, "parameter") == 0){
+            //put in function attribute
+            if(strlen(e_ptr->attribute) != 0){  //attribute is not empty
+                strcat(e_ptr->attribute, ", ");
+            }
+            strcat(e_ptr->attribute, e_dump->type);
+        }
+        e_dump = e_dump->entry_next;
     }
-    strcat(e_ptr->attribute, t);
 
     // printf("\nin get_attribute = %s\n", e_ptr->attribute);
 }
