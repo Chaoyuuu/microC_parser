@@ -1475,13 +1475,13 @@ yyreduce:
 
   case 9:
 #line 121 "compiler_hw2.y" /* yacc.c:1646  */
-    { lookup_symbol((yyvsp[-3].symbol_name), 1);  insert_symbol((yyvsp[-4].symbol_type), (yyvsp[-3].symbol_name), type_v);}
+    { lookup_symbol((yyvsp[-3].symbol_name), 1);  if(error_flag != 1) insert_symbol((yyvsp[-4].symbol_type), (yyvsp[-3].symbol_name), type_v);}
 #line 1480 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
 #line 123 "compiler_hw2.y" /* yacc.c:1646  */
-    { lookup_symbol((yyvsp[-1].symbol_name), 1);  insert_symbol((yyvsp[-2].symbol_type), (yyvsp[-1].symbol_name), type_v);}
+    { lookup_symbol((yyvsp[-1].symbol_name), 1);  if(error_flag != 1) insert_symbol((yyvsp[-2].symbol_type), (yyvsp[-1].symbol_name), type_v);}
 #line 1486 "y.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1493,7 +1493,7 @@ yyreduce:
 
   case 13:
 #line 134 "compiler_hw2.y" /* yacc.c:1646  */
-    { dump_table(); /* dump_symbol();*/   dump_flag = 1;}
+    { dump_table(); dump_flag = 1;}
 #line 1498 "y.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1541,13 +1541,13 @@ yyreduce:
 
   case 70:
 #line 259 "compiler_hw2.y" /* yacc.c:1646  */
-    { /* get_attribute($3); */ insert_symbol((yyvsp[-1].symbol_type), (yyvsp[0].symbol_name), type_p);}
+    { insert_symbol((yyvsp[-1].symbol_type), (yyvsp[0].symbol_name), type_p);}
 #line 1546 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
 #line 261 "compiler_hw2.y" /* yacc.c:1646  */
-    { /* get_attribute($1); */ insert_symbol((yyvsp[-1].symbol_type), (yyvsp[0].symbol_name), type_p);}
+    { insert_symbol((yyvsp[-1].symbol_type), (yyvsp[0].symbol_name), type_p);}
 #line 1552 "y.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1912,11 +1912,9 @@ void insert_symbol(char *t, char* n, char* k) {
     strcpy(e_ptr->name, n);  
 
     if(strcmp(k, "function") == 0){
-        // printf("in get attribute !!!");
         get_attribute(e_ptr);
     }
-    //e_ptr->attribute = NULL;
-
+ 
     // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 

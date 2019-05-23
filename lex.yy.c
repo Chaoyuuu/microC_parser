@@ -1198,7 +1198,12 @@ case 56:
 /* rule 56 can match eol */
 YY_RULE_SETUP
 #line 132 "compiler_hw2.l"
-{      
+{   printf("%d:", line_num);
+                if(strlen(buf) != 0){
+                    printf(" %s", buf);
+                } 
+                printf("\n");
+
                 if(error_flag != 0){
                     yyerror(error_msg);
                     error_flag = 0;
@@ -1209,18 +1214,13 @@ YY_RULE_SETUP
                     yyterminate();
                 } 
 
-                printf("%d:", line_num);
-                if(strlen(buf) != 0)
-                    printf(" %s", buf); 
-                printf("\n");
-                line_num++; 
-
                 if(dump_flag == 1){
                     dump_symbol();
                     dump_flag = 0;
                 }
-                memset(buf, 0, BUF_SIZE);
 
+                memset(buf, 0, BUF_SIZE);
+                line_num++;
             }
 	YY_BREAK
 case 57:

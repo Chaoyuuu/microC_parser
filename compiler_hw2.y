@@ -118,9 +118,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { lookup_symbol($2, 1);  insert_symbol($1, $2, type_v);}
+        { lookup_symbol($2, 1);  if(error_flag != 1) insert_symbol($1, $2, type_v);}
     | type ID SEMICOLON 
-        { lookup_symbol($2, 1);  insert_symbol($1, $2, type_v);}
+        { lookup_symbol($2, 1);  if(error_flag != 1) insert_symbol($1, $2, type_v);}
 ;
 
 print_func
@@ -131,7 +131,7 @@ compound_stat
     : 
     '{'     { /* create_symbol(); */} 
     program 
-    '}'     { dump_table(); /* dump_symbol();*/   dump_flag = 1;}
+    '}'     { dump_table(); dump_flag = 1;}
 ;
 
 expression_stat
@@ -256,9 +256,9 @@ declarator
 
 identifier_list
     : identifier_list ',' type ID 
-        { /* get_attribute($3); */ insert_symbol($3, $4, type_p);}
+        { insert_symbol($3, $4, type_p);}
     | type ID
-        { /* get_attribute($1); */ insert_symbol($1, $2, type_p);}
+        { insert_symbol($1, $2, type_p);}
 ;
 
 declarator2
@@ -385,11 +385,9 @@ void insert_symbol(char *t, char* n, char* k) {
     strcpy(e_ptr->name, n);  
 
     if(strcmp(k, "function") == 0){
-        // printf("in get attribute !!!");
         get_attribute(e_ptr);
     }
-    //e_ptr->attribute = NULL;
-
+ 
     // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 
