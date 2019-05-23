@@ -129,11 +129,12 @@ id			{letter}+({letter}|{digit})*
  /* others */
 
 [;]         { CONCAT; return(SEMICOLON); }
-[\n]        {   printf("%d:", line_num);
+[\n]        {  printf("%d:", line_num);
                 if(strlen(buf) != 0){
                     printf(" %s", buf);
                 } 
                 printf("\n");
+                // printf("error_flag = %d, syntax_flag = %d\n", error_flag, syntax_flag);
 
                 if(error_flag != 0){
                     yyerror(error_msg);
@@ -144,7 +145,7 @@ id			{letter}+({letter}|{digit})*
                 if(syntax_flag != 0){
                     yyterminate();
                 } 
-
+    
                 if(dump_flag == 1){
                     dump_symbol();
                     dump_flag = 0;

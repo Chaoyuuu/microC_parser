@@ -105,6 +105,7 @@ void dump_table();
 
 program
     : program stat 
+    | error
     |
 ;
 
@@ -323,9 +324,12 @@ int main(int argc, char** argv)
 void yyerror(char *s)
 {
     if(!strcmp(s, "syntax error")){
+        // printf("in syntax error");
         memset(syntax_buf, 0, sizeof(syntax_buf));
         strcpy(syntax_buf, buf);
         syntax_flag = 1;
+        // printf(" btn %s, num = %d",buf, yylineno);
+        
         return;
     }
 
@@ -333,7 +337,7 @@ void yyerror(char *s)
     printf("| Error found in line %d: %s\n", yylineno, buf);
     printf("| %s",s);
     printf("\n|-----------------------------------------------|\n\n");
-
+    
 }
 
 void create_symbol() {
@@ -469,11 +473,12 @@ void lookup_function(char *name){
     }
 
     // printf("\nno declared\n");
+    // printf("num = %d, buf = %s\n", yylineno, buf);
     memset(error_msg, 0, sizeof(error_msg));
     strcat(error_msg, "Undeclared function ");
     strcat(error_msg, name);
     error_flag = 1;
-    
+
 }
 void dump_table(){
     table_dump = table_current;
