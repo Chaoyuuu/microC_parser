@@ -148,7 +148,7 @@ selection_statement
     | selection_statement 
       ELSE { create_symbol(); } compound_stat
     | selection_statement
-      IF ELSE { create_symbol(); }
+      ELSE IF{ create_symbol(); }
       '(' expression ')' compound_stat
 ;
 
@@ -239,11 +239,11 @@ assign_op
 ;
 return_statement
     : RETURN expression SEMICOLON
+    | RETURN SEMICOLON
 ;
 
-
 function_declaration
-    : type ID { create_symbol(); }
+   : type ID { create_symbol(); }
       declarator compound_stat 
       { insert_symbol($1, $2, type_f); }
     | ID   { lookup_function($1); }
@@ -273,12 +273,17 @@ identifier_list2
 ;
 
 initializer
-    : I_CONST 
-    | F_CONST
+    : neg_const I_CONST 
+    | neg_const F_CONST
     | QUOTA STRING_CONST QUOTA
     | TRUE
     | FALSE
     | ID { lookup_symbol($1); }
+;
+
+neg_const
+    : '-'
+    |
 ;
 
 /* actions can be taken when meet the token or rule */

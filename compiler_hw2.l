@@ -134,7 +134,6 @@ id			{letter}+({letter}|{digit})*
                     printf(" %s", buf);
                 } 
                 printf("\n");
-                // printf("error_flag = %d, syntax_flag = %d\n", error_flag, syntax_flag);
 
                 if(error_flag != 0){
                     yyerror(error_msg);

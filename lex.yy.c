@@ -1203,7 +1203,6 @@ YY_RULE_SETUP
                     printf(" %s", buf);
                 } 
                 printf("\n");
-                // printf("error_flag = %d, syntax_flag = %d\n", error_flag, syntax_flag);
 
                 if(error_flag != 0){
                     yyerror(error_msg);
@@ -1226,27 +1225,27 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 157 "compiler_hw2.l"
+#line 156 "compiler_hw2.l"
 { CONCAT; } /* Ignore */
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 158 "compiler_hw2.l"
+#line 157 "compiler_hw2.l"
 { CONCAT; } /* Ignore other charactor sets */
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 case YY_STATE_EOF(STRING_STATE):
-#line 159 "compiler_hw2.l"
+#line 158 "compiler_hw2.l"
 { 
                 yyterminate();}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 162 "compiler_hw2.l"
+#line 161 "compiler_hw2.l"
 ECHO;
 	YY_BREAK
-#line 1250 "lex.yy.c"
+#line 1249 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2257,7 +2256,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 162 "compiler_hw2.l"
+#line 161 "compiler_hw2.l"
 
 
 
