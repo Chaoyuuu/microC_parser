@@ -46,8 +46,7 @@ extern char error_msg[256];
 extern int dump_flag;
 extern void yyerror(char *s);
 
-char attri_buf[256];
-
+int func_flag = 0;
 
 /* Symbol table function - you can add new function if needed. */
 void get_attribute(struct Entry * tmp);
@@ -119,9 +118,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { /* lookup_symbol($2, 1); */ if(error_flag != 1) insert_symbol($1, $2, type_v); }
+        { lookup_symbol($2, 1); if(error_flag != 1) insert_symbol($1, $2, type_v); }
     | type ID SEMICOLON 
-        { /* lookup_symbol($2, 1);  */ if(error_flag != 1) insert_symbol($1, $2, type_v); }
+        { lookup_symbol($2, 1); if(error_flag != 1) insert_symbol($1, $2, type_v); }
 ;
 
 print_func
@@ -245,20 +244,25 @@ return_statement
 ;
 
 function_declaration
-    : type ID { lookup_function($2, 2); create_symbol(); }
-      declarator function_tmp
-      { if(error_flag != 1) insert_symbol($1, $2, type_f); }
+    : type ID declarator compound_stat 
+      { lookup_function($2, 3); 
+        if(func_flag != 1) 
+            insert_symbol($1, $2, type_f);
+        func_flag = 0;
+      }
+    | type ID declarator SEMICOLON
+      { dump_table(); 
+        lookup_function($2, 2); 
+        if(error_flag != 1) 
+            insert_symbol($1, $2, type_f);
+      }
 ;
-
-function_tmp
-    : compound_stat
-    | SEMICOLON { dump_table(); }
-;
-
 
 declarator
-    : '(' identifier_list ')'  
-    | '(' ')'
+    : '(' { create_symbol(); }
+      identifier_list ')'  
+    | '(' { create_symbol(); }
+      ')'
 ;
 
 identifier_list
@@ -284,7 +288,7 @@ initializer
     | QUOTA STRING_CONST QUOTA
     | TRUE
     | FALSE
-    | ID { /* lookup_symbol($1); */}
+    | ID { lookup_symbol($1, 2);}
 ;
 
 neg_const
@@ -494,8 +498,11 @@ void lookup_function(char *name, int flag){
                 // redeclared
                 memset(error_msg, 0, sizeof(error_msg));
                 strcat(error_msg, "Redeclared function ");
-                strcat(error_msg, name);
-                error_flag = 1;
+                strcat(error_msg, name); 
+                if(flag == 3)
+                    func_flag = 1;
+                else
+                    error_flag = 1;
                 return;
             }
             e_ptr = e_ptr->entry_next;
