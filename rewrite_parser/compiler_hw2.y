@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "y.tab.h"
-// #include "global.h"
 
 int table_depth = 0;
 const char *type_f = "function";
@@ -12,9 +11,6 @@ const char *type_p = "parameter";
 const char *type_v = "variable";
 
 typedef enum {ADD_OP} Operator;
-// typedef enum {V_Type, I_Type, F_Type, S_Type, ID_Type, B_Type} Type;
-// typedef struct Value Value;
-
 
 struct Entry{
     struct Entry * entry_next;
@@ -132,9 +128,9 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { lookup_symbol($2, 1); if(error_flag != 1) insert_symbol($1, $2, type_v); }
+        { lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
     | type ID SEMICOLON 
-        { lookup_symbol($2, 1); if(error_flag != 1) insert_symbol($1, $2, type_v); }
+        { lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
 ;
 
 print_func
@@ -204,7 +200,7 @@ postfix_expr
 
 parenthesis_expr
     : initializer
-    | ID { lookup_function($1, 1); }
+    | ID { lookup_function($1.id_name, 1); }
       declarator2
     | '(' expression ')'
 ;
@@ -259,16 +255,16 @@ return_statement
 
 function_declaration
     : type ID declarator compound_stat 
-      { lookup_function($2, 3); 
+      { lookup_function($2.id_name, 3); 
         if(func_flag != 1) 
-            insert_symbol($1, $2, type_f);
+            insert_symbol($1.symbol_type, $2.id_name, type_f);
         func_flag = 0;
       }
     | type ID declarator SEMICOLON
       { dump_table(); 
-        lookup_function($2, 2); 
+        lookup_function($2.id_name, 2); 
         if(error_flag != 1) 
-            insert_symbol($1, $2, type_f);
+            insert_symbol($1.symbol_type, $2.id_name, type_f);
       }
 ;
 
@@ -281,9 +277,9 @@ declarator
 
 identifier_list
     : identifier_list ',' type ID 
-        { insert_symbol($3, $4, type_p); }
+        { insert_symbol($3.symbol_type, $4.id_name, type_p); }
     | type ID
-        { insert_symbol($1, $2, type_p); }
+        { insert_symbol($1.symbol_type, $2.id_name, type_p); }
 ;
 
 declarator2
@@ -302,7 +298,7 @@ initializer
     | QUOTA STRING_CONST QUOTA
     | TRUE
     | FALSE
-    | ID { lookup_symbol($1, 2);}
+    | ID { lookup_symbol($1.id_name, 2);}
 ;
 
 neg_const
@@ -380,14 +376,14 @@ void create_symbol() {
         table_header = table_current;
     }
 
-    printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
+    // printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
 }
 
 void insert_symbol(char *t, char* n, char* k) {
     
     struct Table *ptr = table_current; 
     struct Entry *e_ptr = malloc(sizeof(struct Entry));
-    printf("\n----in insert_symbol, %s, %s, %s, %d----\n", n, t, k, ptr->table_depth);
+    // printf("\n----in insert_symbol, %s, %s, %s, %d----\n", t, n, k, ptr->table_depth);
     
     if(ptr->entry_header == NULL){
         ptr->entry_header = e_ptr;
@@ -417,7 +413,7 @@ void insert_symbol(char *t, char* n, char* k) {
         get_attribute(e_ptr);
     }
  
-    printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
+    // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 
 void get_attribute(struct Entry * tmp){
