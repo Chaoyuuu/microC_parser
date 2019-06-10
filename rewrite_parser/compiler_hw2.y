@@ -66,23 +66,8 @@ void dump_table();
  * nonterminal and token type
  */
 %union {
-    // struct Value
-    // {
-    //     union 
-    //     {
-    //         int i;
-    //         float f;
-    //         char *s;
-    //         struct {
-    //             char * id_name;
-    //             // struct Value *val_ptr;
-    //         };
-    //     };
-    //     char *symbol_type;
-    // }Value;
-
+    
     Value val;
-    // struct Value1 val1;
     char * operator;
 
 }
