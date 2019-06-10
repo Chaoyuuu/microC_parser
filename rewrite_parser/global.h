@@ -21,8 +21,5 @@ struct Value
     
 };
 
-
-struct Value * val;
-
 #endif
 

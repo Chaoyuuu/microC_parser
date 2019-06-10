@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "global.h"
 #include "y.tab.h"
 
 int table_depth = 0;
@@ -10,14 +11,12 @@ const char *type_f = "function";
 const char *type_p = "parameter";
 const char *type_v = "variable";
 
-typedef enum {ADD_OP} Operator;
-
 struct Entry{
     struct Entry * entry_next;
     struct Entry * entry_pre;
 
     int index;
-    char name[20];
+    char name[20];     
     char kind[20];
     char type[20];
     int scope;
@@ -57,6 +56,9 @@ void insert_symbol();
 void dump_symbol();
 void dump_table();
 
+/* expression function */
+// Value do_assign();
+
 
 %}
 
@@ -64,47 +66,45 @@ void dump_table();
  * nonterminal and token type
  */
 %union {
-        struct Value
-        {
-            union 
-            {
-                int i;
-                float f;
-                char *s;
-                struct {
-                    char * id_name;
-                    // struct Value *val_ptr;
-                };
-            };
-            char *symbol_type;
-        }Value;
+    // struct Value
+    // {
+    //     union 
+    //     {
+    //         int i;
+    //         float f;
+    //         char *s;
+    //         struct {
+    //             char * id_name;
+    //             // struct Value *val_ptr;
+    //         };
+    //     };
+    //     char *symbol_type;
+    // }Value;
 
-        struct Value val;
+    Value val;
+    // struct Value1 val1;
+    char * operator;
+
 }
 
 /* Token */
-%token BOOL
-%token FLOAT
-%token INT
-%token VOID
-%token STRING
+%token BOOL FLOAT INT VOID STRING
 %token INC_OP DEC_OP GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
 %token ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
 %token TRUE FALSE RETURN 
-
-/* Token without return */
 %token PRINT 
 %token IF ELSE FOR WHILE 
-%token SEMICOLON QUOTA ID
+%token SEMICOLON QUOTA 
 
 /* Token with return, which need to sepcify type */
 %token <val> I_CONST
 %token <val> F_CONST
 %token <val> STRING_CONST 
+%token <val> ID
 
 
-%type <val> type 
-%type <val> ID
+%type <val> type initializer expression
+%type <operator> assign_op
 
 /* Yacc will start at this nonterminal */
 %start program 
@@ -128,7 +128,7 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
+        { printf("--44-"); lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
     | type ID SEMICOLON 
         { lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
 ;
@@ -154,23 +154,23 @@ expression_stat
 selection_statement
     : IF { create_symbol(); }
       '(' expression ')' compound_stat
-    | selection_statement 
+    | /* selection_statement */
       ELSE { create_symbol(); } compound_stat
-    | selection_statement
+    | /* selection_statement */
       ELSE IF{ create_symbol(); }
       '(' expression ')' compound_stat
 ;
 
 while_statement
-    : WHILE 
-     { create_symbol(); }
-    '(' expression ')' compound_stat 
+    : WHILE                                 
+      { create_symbol(); }
+     '(' expression ')' compound_stat 
 ;
 
 
 expression
-    : logic_expr 
-    | assign_expression 
+    : logic_expr {}
+    | assign_expression {}
 ;
 
 logic_expr
@@ -237,16 +237,16 @@ logic_op
 ;
 
 assign_expression
-    : expression assign_op expression 
+    : expression assign_op expression { /* do_assign($1, $2, $3); */ printf("******%s\n", $2);}
 ;
 
 assign_op
-    : ADD_ASSIGN 
-    | SUB_ASSIGN 
-    | MUL_ASSIGN 
-    | DIV_ASSIGN 
-    | MOD_ASSIGN 
-    | '=' 
+    : ADD_ASSIGN { $$ = "ADD_ASSIGN"; }
+    | SUB_ASSIGN {}
+    | MUL_ASSIGN {}
+    | DIV_ASSIGN {}
+    | MOD_ASSIGN {}
+    | '='        {}
 ;
 return_statement
     : RETURN expression SEMICOLON
@@ -293,27 +293,27 @@ identifier_list2
 ;
 
 initializer
-    : neg_const I_CONST 
-    | neg_const F_CONST
-    | QUOTA STRING_CONST QUOTA
-    | TRUE
-    | FALSE
-    | ID { lookup_symbol($1.id_name, 2);}
+    : I_CONST /*neg_const I_CONST */ { $$ = yylval.val; } 
+    | F_CONST /*neg_const F_CONST */ { $$ = yylval.val; }
+    | QUOTA STRING_CONST QUOTA { $$ = yylval.val; }
+    | TRUE  { }
+    | FALSE { }
+    | ID { lookup_symbol($1.id_name, 2); $$ = yylval.val; }
 ;
 
-neg_const
+/* neg_const
     : '-'
     |
-;
+; */
 
 /* actions can be taken when meet the token or rule */
 /* $$ = yylval.val; */
 type
-    : INT   { }
-    | FLOAT {  }
-    | BOOL  {  }
-    | STRING{  }
-    | VOID  {  }
+    : INT   { $$ = yylval.val; }
+    | FLOAT { printf("-----"); $$ = yylval.val; }
+    | BOOL  { $$ = yylval.val; }
+    | STRING{ $$ = yylval.val; }
+    | VOID  { $$ = yylval.val; }
 ;
 
 %%
@@ -376,14 +376,16 @@ void create_symbol() {
         table_header = table_current;
     }
 
-    // printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
+    printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
 }
 
-void insert_symbol(char *t, char* n, char* k) {
-    
+void insert_symbol(Symbol_type *t, char* n, char* k) {
+    printf("/*/*/*/*/*");
     struct Table *ptr = table_current; 
     struct Entry *e_ptr = malloc(sizeof(struct Entry));
-    // printf("\n----in insert_symbol, %s, %s, %s, %d----\n", t, n, k, ptr->table_depth);
+    printf("/*/*/*/*/*");
+    printf("\n----in insert_symbol, %d, %s, %s, %d----\n", t, n, k, ptr->table_depth);
+    printf("/*/*/*/*/*");
     
     if(ptr->entry_header == NULL){
         ptr->entry_header = e_ptr;
@@ -405,7 +407,7 @@ void insert_symbol(char *t, char* n, char* k) {
     memset(e_ptr->name, 0, sizeof(e_ptr->name));
     memset(e_ptr->attribute, 0, sizeof(e_ptr->attribute));
 
-    strcpy(e_ptr->type, t);
+    strcpy(e_ptr->type, (char*)t);
     strcpy(e_ptr->kind, k);
     strcpy(e_ptr->name, n);  
 
@@ -413,7 +415,7 @@ void insert_symbol(char *t, char* n, char* k) {
         get_attribute(e_ptr);
     }
  
-    // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
+    printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 
 void get_attribute(struct Entry * tmp){
@@ -553,3 +555,9 @@ void dump_symbol() {
     
     }
 }
+
+
+//expression function
+// Value do_assign(Value v1, char *op, Value v2){
+//     printf("in do_assign, %s", op);
+// }
