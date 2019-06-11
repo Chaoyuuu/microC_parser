@@ -19,6 +19,7 @@ struct Entry{
     char name[20];     
     char kind[20];
     char type[20];
+    // int type;
     int scope;
     char attribute[50];
 };
@@ -68,7 +69,7 @@ void dump_table();
 %union {
     
     Value val;
-    char * operator;
+    Operator op;
 
 }
 
@@ -88,8 +89,10 @@ void dump_table();
 %token <val> ID
 
 
-%type <val> type initializer expression
-%type <operator> assign_op
+%type <val> type initializer 
+%type <val> expression logic_expr comparison_expr add_expr mul_expr 
+%type <val> postfix_expr parenthesis_expr assign_expression 
+%type <op>  postfix_op mul_op relation_op addition_op logic_op assign_op 
 
 /* Yacc will start at this nonterminal */
 %start program 
@@ -113,7 +116,7 @@ stat
 
 declaration
     : type ID '=' expression SEMICOLON 
-        { printf("--44-"); lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
+        { lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
     | type ID SEMICOLON 
         { lookup_symbol($2.id_name, 1); if(error_flag != 1) insert_symbol($1.symbol_type, $2.id_name, type_v); }
 ;
@@ -159,79 +162,79 @@ expression
 ;
 
 logic_expr
-    : comparison_expr
-    | logic_expr logic_op comparison_expr
+    : comparison_expr                       {}
+    | logic_expr logic_op comparison_expr   {}
 ;
 
 comparison_expr
-    : add_expr
-    | comparison_expr relation_op add_expr
+    : add_expr {}
+    | comparison_expr relation_op add_expr {}
 ;
 
 add_expr
-    : mul_expr
-    | add_expr addition_op mul_expr
+    : mul_expr {}
+    | add_expr addition_op mul_expr {}
 ;
 
 mul_expr
-    : postfix_expr
-    | mul_expr mul_op postfix_expr
+    : postfix_expr {}
+    | mul_expr mul_op postfix_expr {}
 ;
 
 postfix_expr
-    : parenthesis_expr
-    | parenthesis_expr postfix_op
+    : parenthesis_expr {}
+    | parenthesis_expr postfix_op {}
 ;
 
 parenthesis_expr
-    : initializer
+    : initializer {}
     | ID { lookup_function($1.id_name, 1); }
-      declarator2
-    | '(' expression ')'
+      declarator2 {}
+    | '(' expression ')' { $$ = $2; }
 ;
 
 postfix_op
-    : INC_OP 
-    | DEC_OP 
+    : INC_OP    { $$ = INC_OPT; }
+    | DEC_OP    { $$ = DEC_OPT; }
 ;
 
 mul_op
-    : '*' 
-    | '/' 
-    | '%'
+    : '*'   { $$ = MUL_OPT; }
+    | '/'   { $$ = DIV_OPT; }
+    | '%'   { $$ = MOD_OPT; }
 ;
 
 relation_op
-    : '>' 
-    | '<' 
-    | GE_OP 
-    | LE_OP 
-    | EQ_OP 
-    | NE_OP 
+    : '>'   { $$ = MORE_OPT; }
+    | '<'   { $$ = LESS_OPT; }
+    | GE_OP { $$ = GE_OPT; }
+    | LE_OP { $$ = LE_OPT; }
+    | EQ_OP { $$ = EQ_OPT; }
+    | NE_OP { $$ = NE_OPT; }
 ;
 
 addition_op
-    : '+' 
-    | '-' 
+    : '+'   { $$ = ADD_OPT; }
+    | '-'   { $$ = MINUS_OPT; }
 ;
 
 logic_op
-    : AND_OP 
-    | OR_OP 
-    | '!' 
+    : AND_OP { $$ = AND_OPT; }
+    | OR_OP  { $$ = OR_OPT; }
+    | '!'    { $$ = NOT_OPT; }
 ;
 
 assign_expression
-    : expression assign_op expression { /* do_assign($1, $2, $3); */ printf("******%s\n", $2);}
+    : expression assign_op expression { /* do_assign($1, $2, $3); */ printf("**** %d $d\n", $2);}
 ;
 
 assign_op
-    : ADD_ASSIGN { $$ = "ADD_ASSIGN"; }
-    | SUB_ASSIGN {}
-    | MUL_ASSIGN {}
-    | DIV_ASSIGN {}
-    | MOD_ASSIGN {}
-    | '='        {}
+    : ADD_ASSIGN { $$ = ADD_ASSIGN_OPT; }
+    | SUB_ASSIGN { $$ = SUB_ASSIGN_OPT; }
+    | MUL_ASSIGN { $$ = MUL_ASSIGN_OPT; }
+    | DIV_ASSIGN { $$ = DIV_ASSIGN_OPT; }
+    | MOD_ASSIGN { $$ = MOD_ASSIGN_OPT; }
+    | '='        { $$ = ASSIGN_OPT; }
 ;
 return_statement
     : RETURN expression SEMICOLON
@@ -295,7 +298,7 @@ initializer
 /* $$ = yylval.val; */
 type
     : INT   { $$ = yylval.val; }
-    | FLOAT { printf("-----"); $$ = yylval.val; }
+    | FLOAT { $$ = yylval.val; }
     | BOOL  { $$ = yylval.val; }
     | STRING{ $$ = yylval.val; }
     | VOID  { $$ = yylval.val; }
@@ -364,14 +367,13 @@ void create_symbol() {
     printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
 }
 
-void insert_symbol(Symbol_type *t, char* n, char* k) {
-    printf("/*/*/*/*/*");
+void insert_symbol(Symbol_type t, char* n, char* k) {
+   
     struct Table *ptr = table_current; 
     struct Entry *e_ptr = malloc(sizeof(struct Entry));
-    printf("/*/*/*/*/*");
-    printf("\n----in insert_symbol, %d, %s, %s, %d----\n", t, n, k, ptr->table_depth);
-    printf("/*/*/*/*/*");
     
+    printf("\n----in insert_symbol, %d, %s, %s, %d----\n", t, n, k, ptr->table_depth);
+   
     if(ptr->entry_header == NULL){
         ptr->entry_header = e_ptr;
         e_ptr->entry_pre = NULL;
@@ -392,9 +394,34 @@ void insert_symbol(Symbol_type *t, char* n, char* k) {
     memset(e_ptr->name, 0, sizeof(e_ptr->name));
     memset(e_ptr->attribute, 0, sizeof(e_ptr->attribute));
 
-    strcpy(e_ptr->type, (char*)t);
+    // strcpy(e_ptr->type, t);
     strcpy(e_ptr->kind, k);
     strcpy(e_ptr->name, n);  
+    // e_ptr->type = t;
+
+    switch (t){
+        case V_Type:
+            strcpy(e_ptr->type, "void");
+            break;
+        case I_Type:
+            strcpy(e_ptr->type, "int");
+            break;
+        case F_Type:
+            strcpy(e_ptr->type, "float");
+            break;
+        case S_Type:
+            strcpy(e_ptr->type, "String");
+            break;
+        case ID_Type:
+            strcpy(e_ptr->type, "ID");
+            break;
+        case B_Type:
+            strcpy(e_ptr->type, "bool");
+            break;
+        default:
+            printf("wrong input in type");
+            break;
+    }
 
     if(strcmp(k, "function") == 0){
         get_attribute(e_ptr);
