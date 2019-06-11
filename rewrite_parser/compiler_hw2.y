@@ -59,6 +59,18 @@ void dump_table();
 
 /* expression function */
 // Value do_assign();
+Value switch_mul_op();
+Value switch_addition_op();
+Value switch_postfix_op();
+
+
+//arithmetic
+Value mul_arith(Value v1, Value v2);
+Value div_arith(Value v1, Value v2);
+Value mod_arith(Value v1, Value v2);
+Value add_arith(Value v1, Value v2);
+Value minus_arith(Value v1, Value v2);
+
 
 
 %}
@@ -173,17 +185,17 @@ comparison_expr
 
 add_expr
     : mul_expr {}
-    | add_expr addition_op mul_expr {}
+    | add_expr addition_op mul_expr { $$ = switch_addition_op($1, $2, $3); }
 ;
 
 mul_expr
     : postfix_expr {}
-    | mul_expr mul_op postfix_expr {}
+    | mul_expr mul_op postfix_expr { $$ = switch_mul_op($1, $2, $3); }
 ;
 
 postfix_expr
     : parenthesis_expr {}
-    | parenthesis_expr postfix_op {}
+    | parenthesis_expr postfix_op { $$ = switch_postfix_op($1, $2); }
 ;
 
 parenthesis_expr
@@ -573,3 +585,133 @@ void dump_symbol() {
 // Value do_assign(Value v1, char *op, Value v2){
 //     printf("in do_assign, %s", op);
 // }
+
+Value switch_mul_op(Value v1, Operator op, Value v2){
+    printf("in switch_mul_op\n");
+    
+    switch (op){
+        case MUL_OPT:
+            return mul_arith(v1, v2);            
+        case DIV_OPT:
+            return div_arith(v1, v2);
+        case MOD_OPT:
+            // return mod_arirh(v1, v2);
+            printf("in MOD_arith\n");
+            break;
+        default:
+            printf("wrong case in mul_arith\n");
+            break;
+    }
+
+}
+
+Value switch_addition_op(Value v1, Operator op, Value v2){
+    printf("in switch_addition_op\n");
+    switch (op) {
+        case ADD_OPT:
+            return add_arith(v1, v2);
+        case MINUS_OPT:
+            return minus_arith(v1, v2);
+        default:
+            printf("wrong case in addition_op\n");
+            break;
+    }
+}
+
+Value switch_postfix_op(Value v1, Operator op){
+    printf("in switch_postfix_op\n");
+    Value tmp;
+    tmp.symbol_type = I_Type;
+    tmp.i = 1;
+
+    switch (op){
+        case INC_OPT:
+            return add_arith(v1, tmp);
+        case DEC_OPT:
+            return minus_arith(v1, tmp);
+        default:
+            printf("wrong case in postfix_op\n");
+            break;
+    }
+}
+
+//arithmetic function
+Value mul_arith(Value v1, Value v2){
+    printf("in mul_arith\n");
+    Value v_tmp;
+    // memset(v_tmp, 0, sizeof(v_tmp));
+
+    if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
+        v_tmp.symbol_type = I_Type;
+        v_tmp.i = (v1.i)*(v2.i);
+    }else{
+        v_tmp.symbol_type = F_Type;
+        v_tmp.f = (v1.f)*(v2.f);
+    }
+    return v_tmp;
+}
+
+Value div_arith(Value v1, Value v2){
+    printf("in div_arith\n");
+    Value v_tmp;
+
+    if(v2.i == 0){
+        printf("v2 cannot be zero !!!");
+        //yyerror;
+        return v1;
+    }
+
+    if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
+        v_tmp.symbol_type = I_Type;
+        v_tmp.i = (v1.i)/(v2.i);
+    }else{
+        v_tmp.symbol_type = F_Type;
+        v_tmp.f = (v1.f)/(v2.f);
+    }
+    return v_tmp;
+}
+
+Value mod_arith(Value v1, Value v2){
+    printf("in mod_arith\n");
+    Value v_tmp;
+
+    if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
+        v_tmp.symbol_type = I_Type;
+        v_tmp.i = (v1.i)%(v2.i);
+        return v_tmp;
+    }else{
+        printf("v1 v2 need to be I_Type\n");
+        //yyerror();
+       v_tmp = v1;
+    }
+    return v_tmp;
+}
+
+Value add_arith(Value v1, Value v2){
+    printf("in add_arith\n");
+    Value v_tmp;
+
+    if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
+        v_tmp.symbol_type = I_Type;
+        v_tmp.i = (v1.i)+(v2.i);
+    }else{
+        v_tmp.symbol_type = F_Type;
+        v_tmp.f = (v1.f)+(v2.f);
+    }
+    return v_tmp;
+
+}
+
+Value minus_arith(Value v1, Value v2){
+    printf("in minus_arith\n");
+    Value v_tmp;
+
+    if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
+        v_tmp.symbol_type = I_Type;
+        v_tmp.i = (v1.i)-(v2.i);
+    }else{
+        v_tmp.symbol_type = F_Type;
+        v_tmp.f = (v1.f)-(v2.f);
+    }
+    return v_tmp;
+}
