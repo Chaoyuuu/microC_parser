@@ -62,6 +62,9 @@ void dump_table();
 Value switch_mul_op();
 Value switch_addition_op();
 Value switch_postfix_op();
+Value switch_assign_op();
+Value switch_relation_op();
+Value switch_logic_op();
 
 
 //arithmetic
@@ -175,12 +178,12 @@ expression
 
 logic_expr
     : comparison_expr                       {}
-    | logic_expr logic_op comparison_expr   {}
+    | logic_expr logic_op comparison_expr   { $$ = switch_logic_op($1, $2, $3); }
 ;
 
 comparison_expr
     : add_expr {}
-    | comparison_expr relation_op add_expr {}
+    | comparison_expr relation_op add_expr { $$ = switch_relation_op($1, $2, $3); }
 ;
 
 add_expr
@@ -237,7 +240,7 @@ logic_op
 ;
 
 assign_expression
-    : expression assign_op expression { /* do_assign($1, $2, $3); */ printf("**** %d $d\n", $2);}
+    : expression assign_op expression { switch_assign_op($1, $2, $3); }
 ;
 
 assign_op
@@ -631,6 +634,77 @@ Value switch_postfix_op(Value v1, Operator op){
             return minus_arith(v1, tmp);
         default:
             printf("wrong case in postfix_op\n");
+            break;
+    }
+}
+
+Value switch_assign_op(Value v1, Operator op, Value v2){
+    printf("in switch_assign_op\n");
+
+    switch (op){
+        case ADD_ASSIGN_OPT:
+            return add_arith(v1, v2);
+        case SUB_ASSIGN_OPT:
+            return minus_arith(v1, v2);
+        case MUL_ASSIGN_OPT:
+            return mul_arith(v1, v2);
+        case DIV_ASSIGN_OPT:
+            return div_arith(v1, v2);
+        case ASSIGN_OPT:
+            return v2;
+        default:
+            printf("wrong case in assign_op\n");
+            break;
+    }
+}
+
+Value switch_relation_op(Value v1, Operator op, Value v2){
+    printf("in switch_relation_op\n");
+    Value tmp;
+    tmp.symbol_type = I_Type; // ??????B_Type
+
+    switch (op){
+        case MORE_OPT:
+            tmp.i = (v1.f > v2.f);
+            return tmp;
+        case LESS_OPT:
+            tmp.i = (v1.f < v2.f);
+            return tmp;
+        case GE_OPT:
+            tmp.i = (v1.f >= v2.f);
+            return tmp;
+        case LE_OPT:
+            tmp.i = (v1.f <= v2.f);
+            return tmp;
+        case EQ_OPT:
+            tmp.i = (v1.f == v2.f);
+            return tmp;
+        case NE_OPT:
+            tmp.i = (v1.f != v2.f);
+            return tmp;
+        default:
+            printf("wrong case in relation_op\n");
+            break;
+    }
+}
+
+Value switch_logic_op(Value v1, Operator op, Value v2){
+    printf("in switch_logic_op\n");
+    Value tmp;
+    tmp.symbol_type = I_Type; // ??????B_Type
+
+    switch (op){
+        case AND_OPT:
+            tmp.i = (v1.f && v2.f);
+            return tmp;
+        case OR_OPT:
+            tmp.i = (v1.f || v2.f);
+            return tmp;
+        case NOT_OPT: //??????????????????? !a
+            tmp.i = (v1.f >= v2.f);
+            return tmp;
+        default:
+            printf("wrong case in logic_op\n");
             break;
     }
 }
