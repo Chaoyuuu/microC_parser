@@ -1,14 +1,39 @@
+
+----in create_symbol, depth = 0, current = 0xf84010----
 1: /*
 2:  * 2019 Spring Compiler Course Assignment 2 
 3:  */
 4:
+
+----in insert_symbol, 2, c, variable, 0----
+
+++++0, c, variable, float, 0++++
 5: float c = 1.5;
 6:
+
+----in create_symbol, depth = 1, current = 0xf8a1b0----
+
+----in insert_symbol, 1, n, parameter, 1----
+
+++++0, n, parameter, int, 1++++
+
+----in insert_symbol, 1, m, parameter, 1----
+
+++++1, m, parameter, int, 1++++
 7: bool loop(int n, int m) {
+
+----in create_symbol, depth = 2, current = 0xf8a340----
+in switch_relation_op
 8:     while (n > m) {
+in switch_postfix_op
+in minus_arith
 9:         n--;
 10:     }
 11:     return true;
+
+----in insert_symbol, 5, loop, function, 0----
+
+++++1, loop, function, bool, 0++++
 12: }
 
 Index     Name      Kind        Type      Scope     Attribute 
@@ -17,13 +42,28 @@ Index     Name      Kind        Type      Scope     Attribute
 1         m         parameter   int       1         
 
 13:
+
+----in create_symbol, depth = 1, current = 0xf8a480----
 14: int main() {
 15:     // Declaration
+
+----in insert_symbol, 1, x, variable, 1----
+
+++++0, x, variable, int, 1++++
 16:     int x;
+
+----in insert_symbol, 1, i, variable, 1----
+
+++++1, i, variable, int, 1++++
 17:     int i;
+
+----in insert_symbol, 1, a, variable, 1----
+
+++++2, a, variable, int, 1++++
 18:     int a = 5;
 19:
 20:     // syntactical error
+in switch_relation_op
 21:     iff (a > 10) {
 
 |-----------------------------------------------|

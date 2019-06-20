@@ -64,8 +64,6 @@ Value switch_addition_op();
 Value switch_postfix_op();
 Value switch_assign_op();
 Value switch_relation_op();
-Value switch_logic_op();
-
 
 //arithmetic
 Value mul_arith(Value v1, Value v2);
@@ -73,8 +71,6 @@ Value div_arith(Value v1, Value v2);
 Value mod_arith(Value v1, Value v2);
 Value add_arith(Value v1, Value v2);
 Value minus_arith(Value v1, Value v2);
-
-
 
 %}
 
@@ -105,9 +101,9 @@ Value minus_arith(Value v1, Value v2);
 
 
 %type <val> type initializer 
-%type <val> expression logic_expr comparison_expr add_expr mul_expr 
-%type <val> postfix_expr parenthesis_expr assign_expression 
-%type <op>  postfix_op mul_op relation_op addition_op logic_op assign_op 
+%type <val> expression comparison_expr add_expr mul_expr assign_expr
+%type <val> postfix_expr parenthesis_expr 
+%type <op>  postfix_op mul_op relation_op addition_op  assign_op 
 
 /* Yacc will start at this nonterminal */
 %start program 
@@ -172,13 +168,13 @@ while_statement
 
 
 expression
-    : logic_expr {}
-    | assign_expression {}
+    : assign_expr {}
+   /* | assign_expression {}*/
 ;
 
-logic_expr
+assign_expr
     : comparison_expr                       {}
-    | logic_expr logic_op comparison_expr   { $$ = switch_logic_op($1, $2, $3); }
+    | assign_expr assign_op comparison_expr   { $$ = switch_assign_op($1, $2, $3); }
 ;
 
 comparison_expr
@@ -232,17 +228,12 @@ addition_op
     : '+'   { $$ = ADD_OPT; }
     | '-'   { $$ = MINUS_OPT; }
 ;
-
-logic_op
-    : AND_OP { $$ = AND_OPT; }
-    | OR_OP  { $$ = OR_OPT; }
-    | '!'    { $$ = NOT_OPT; }
+/*
+ assign_expression
+    : expression
+    | assign_expression assign_op expression { switch_assign_op($1, $2, $3); }
 ;
-
-assign_expression
-    : expression assign_op expression { switch_assign_op($1, $2, $3); }
-;
-
+*/
 assign_op
     : ADD_ASSIGN { $$ = ADD_ASSIGN_OPT; }
     | SUB_ASSIGN { $$ = SUB_ASSIGN_OPT; }
@@ -379,7 +370,7 @@ void create_symbol() {
         table_header = table_current;
     }
 
-    printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
+    // printf("\n----in create_symbol, depth = %d, current = %p----\n", ptr->table_depth, table_current);
 }
 
 void insert_symbol(Symbol_type t, char* n, char* k) {
@@ -387,7 +378,7 @@ void insert_symbol(Symbol_type t, char* n, char* k) {
     struct Table *ptr = table_current; 
     struct Entry *e_ptr = malloc(sizeof(struct Entry));
     
-    printf("\n----in insert_symbol, %d, %s, %s, %d----\n", t, n, k, ptr->table_depth);
+    // printf("\n----in insert_symbol, %d, %s, %s, %d----\n", t, n, k, ptr->table_depth);
    
     if(ptr->entry_header == NULL){
         ptr->entry_header = e_ptr;
@@ -442,7 +433,7 @@ void insert_symbol(Symbol_type t, char* n, char* k) {
         get_attribute(e_ptr);
     }
  
-    printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
+    // printf("\n++++%d, %s, %s, %s, %d++++\n", e_ptr->index, e_ptr->name, e_ptr->kind, e_ptr->type, e_ptr->scope);
 }
 
 void get_attribute(struct Entry * tmp){
@@ -590,7 +581,7 @@ void dump_symbol() {
 // }
 
 Value switch_mul_op(Value v1, Operator op, Value v2){
-    printf("in switch_mul_op\n");
+    // printf("in switch_mul_op\n");
     
     switch (op){
         case MUL_OPT:
@@ -599,8 +590,8 @@ Value switch_mul_op(Value v1, Operator op, Value v2){
             return div_arith(v1, v2);
         case MOD_OPT:
             // return mod_arirh(v1, v2);
-            printf("in MOD_arith\n");
-            break;
+            printf("in MOD_arith\n"); 
+            // break;
         default:
             printf("wrong case in mul_arith\n");
             break;
@@ -609,7 +600,7 @@ Value switch_mul_op(Value v1, Operator op, Value v2){
 }
 
 Value switch_addition_op(Value v1, Operator op, Value v2){
-    printf("in switch_addition_op\n");
+    // printf("in switch_addition_op\n");
     switch (op) {
         case ADD_OPT:
             return add_arith(v1, v2);
@@ -622,7 +613,7 @@ Value switch_addition_op(Value v1, Operator op, Value v2){
 }
 
 Value switch_postfix_op(Value v1, Operator op){
-    printf("in switch_postfix_op\n");
+    // printf("in switch_postfix_op\n");
     Value tmp;
     tmp.symbol_type = I_Type;
     tmp.i = 1;
@@ -639,7 +630,7 @@ Value switch_postfix_op(Value v1, Operator op){
 }
 
 Value switch_assign_op(Value v1, Operator op, Value v2){
-    printf("in switch_assign_op\n");
+    // printf("in switch_assign_op\n");
 
     switch (op){
         case ADD_ASSIGN_OPT:
@@ -659,7 +650,7 @@ Value switch_assign_op(Value v1, Operator op, Value v2){
 }
 
 Value switch_relation_op(Value v1, Operator op, Value v2){
-    printf("in switch_relation_op\n");
+    // printf("in switch_relation_op\n");
     Value tmp;
     tmp.symbol_type = I_Type; // ??????B_Type
 
@@ -688,30 +679,10 @@ Value switch_relation_op(Value v1, Operator op, Value v2){
     }
 }
 
-Value switch_logic_op(Value v1, Operator op, Value v2){
-    printf("in switch_logic_op\n");
-    Value tmp;
-    tmp.symbol_type = I_Type; // ??????B_Type
-
-    switch (op){
-        case AND_OPT:
-            tmp.i = (v1.f && v2.f);
-            return tmp;
-        case OR_OPT:
-            tmp.i = (v1.f || v2.f);
-            return tmp;
-        case NOT_OPT: //??????????????????? !a
-            tmp.i = (v1.f >= v2.f);
-            return tmp;
-        default:
-            printf("wrong case in logic_op\n");
-            break;
-    }
-}
 
 //arithmetic function
 Value mul_arith(Value v1, Value v2){
-    printf("in mul_arith\n");
+    // printf("in mul_arith\n");
     Value v_tmp;
     // memset(v_tmp, 0, sizeof(v_tmp));
 
@@ -726,7 +697,7 @@ Value mul_arith(Value v1, Value v2){
 }
 
 Value div_arith(Value v1, Value v2){
-    printf("in div_arith\n");
+    // printf("in div_arith\n");
     Value v_tmp;
 
     if(v2.i == 0){
@@ -746,7 +717,7 @@ Value div_arith(Value v1, Value v2){
 }
 
 Value mod_arith(Value v1, Value v2){
-    printf("in mod_arith\n");
+    // printf("in mod_arith\n");
     Value v_tmp;
 
     if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
@@ -762,7 +733,7 @@ Value mod_arith(Value v1, Value v2){
 }
 
 Value add_arith(Value v1, Value v2){
-    printf("in add_arith\n");
+    // printf("in add_arith\n");
     Value v_tmp;
 
     if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
@@ -777,7 +748,7 @@ Value add_arith(Value v1, Value v2){
 }
 
 Value minus_arith(Value v1, Value v2){
-    printf("in minus_arith\n");
+    // printf("in minus_arith\n");
     Value v_tmp;
 
     if(v1.symbol_type == I_Type && v2.symbol_type == I_Type){
